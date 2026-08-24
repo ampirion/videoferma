@@ -780,7 +780,7 @@ input[type=range]{accent-color:var(--accent)}
   box-shadow:0 6px 18px rgba(0,0,0,.55);
 }
 .fs-close-btn:hover{background:#d32f2f}
-/* ===== v4.57 ===== */
+/* ===== v4.59 ===== */
 .clipBlock .cname{ opacity:.5; }
 #tlInner.tool-tsf .tlTrackRow, #tlInner.tool-tsf .tlContent{ cursor:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='26' height='26' viewBox='0 0 26 26'><path d='M3 7h16m0 0-5-4.5m5 4.5-5 4.5' stroke='white' stroke-width='2.4' fill='none' stroke-linecap='round' stroke-linejoin='round'/><path d='M3 19h16m0 0-5-4.5m5 4.5-5 4.5' stroke='white' stroke-width='2.4' fill='none' stroke-linecap='round' stroke-linejoin='round'/></svg>") 13 13, pointer; }
 #tlInner.tool-tsb .tlTrackRow, #tlInner.tool-tsb .tlContent{ cursor:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='26' height='26' viewBox='0 0 26 26'><path d='M23 7H7m0 0 5-4.5M7 7l5 4.5' stroke='white' stroke-width='2.4' fill='none' stroke-linecap='round' stroke-linejoin='round'/><path d='M23 19H7m0 0 5-4.5M7 19l5 4.5' stroke='white' stroke-width='2.4' fill='none' stroke-linecap='round' stroke-linejoin='round'/></svg>") 13 13, pointer; }
@@ -854,7 +854,7 @@ input[type=range]{accent-color:var(--accent)}
 <body>
 
 <header id="topbar">
-  <div class="brand"><span class="logo">▶</span> Vimaker <span class="sub" id="brandSub">v4.57 — online видео редактор, аналог Adobe Premiere, DaVinci</span> <a class="author" href="https://t.me/psihoboom" target="_blank" rel="noopener" title="Телеграм автора">Автор: AMPIRION</a></div>
+  <div class="brand"><span class="logo">▶</span> Vimaker <span class="sub" id="brandSub">v4.59 — online видео редактор, аналог Adobe Premiere, DaVinci</span> <a class="author" href="https://t.me/psihoboom" target="_blank" rel="noopener" title="Телеграм автора">Автор: AMPIRION</a></div>
   <div class="sep"></div>
   <div class="sep"></div>
   <button id="btnExportMp4" class="tbtn primary" title="Экспорт видео: битрейт, разрешение, диапазон по меткам I/O">🎬 MP4</button>
@@ -1090,8 +1090,8 @@ input[type=range]{accent-color:var(--accent)}
 <div id="tourBall"></div>
 <div id="tourTip"></div>
 <input type="file" id="fileXml" accept=".xml,text/xml" hidden>
-<input type="file" id="fileMedia" multiple accept="video/*,audio/*,image/*,.gif,.mts,.mxf,.m2ts,.mkv,.webm,.ogv,.mov,.avi,.m4v" hidden>
-<input type="file" id="fileAny" multiple accept=".xml,.mp4,.mov,.mts,.mxf,.m2ts,.mkv,.webm,.ogv,.wav,.mp3,.aiff,.flac,.png,.jpg,.jpeg,.gif,.tif,.tiff" hidden>
+<input type="file" id="fileMedia" multiple hidden>
+<input type="file" id="fileAny" multiple hidden>
 <input type="file" id="fileDir" webkitdirectory directory multiple hidden>
 <input type="file" id="fileBind" accept="video/*,audio/*" hidden>
 
@@ -1106,7 +1106,7 @@ input[type=range]{accent-color:var(--accent)}
     <button class="tbtn primary" id="btnOpenXml2" style="font-size:13.5px;padding:9px 18px">📄 Выбрать XML-файл…</button>
     <button class="tbtn" id="btnDemo" style="font-size:13.5px;padding:9px 18px;margin-left:8px">✨ Открыть демо-проект</button>
     <p id="emptyDrop" style="margin-top:18px; color:var(--dimmer); font-size:12px">Можно просто перетащить файл XML в окно браузера</p>
-    <p class="verline" id="appVer">Версия приложения: <b>v4.57</b></p>
+    <p class="verline" id="appVer">Версия приложения: <b>v4.59</b></p>
   </div>
 </div>
 
@@ -7271,6 +7271,11 @@ $('fileDir').addEventListener('change', e => {
   e.target.value = '';
 });
 
+function isImageFile(f){
+  const type = (f && f.type || '').toLowerCase();
+  if(type.startsWith('image/')) return true;
+  return /\.(png|jpe?g|gif|webp|bmp|avif|svg|tiff?|heic|heif|ico)$/i.test((f && f.name) || '');
+}
 function attachMediaFiles(fileList, opts){
   opts = opts || {};
   const importOnly = !!opts.importOnly;
@@ -7355,8 +7360,8 @@ function attachMediaFiles(fileList, opts){
     } else {
       // файл не из проекта — импортируем как новый ресурс в бины
       const fid = 'lcl-' + (++UID_COUNTER);
-      const isImage = (f.type||'').startsWith('image/');
-      const info = { id: fid, name: f.name, path: 'file:///' + f.name, fps: 25, durFrames: 0, durSec: isImage ? 5 : 0, w: 0, h: 0, hasVideo: true, hasAudio: !isImage, local: true, isImage };
+      const isImage = isImageFile(f);
+      const info = { id: fid, name: f.name, path: 'file:///' + f.name, fps: 25, durFrames: isImage ? 25 * 15 : 0, durSec: isImage ? 15 : 0, w: 0, h: 0, hasVideo: true, hasAudio: !isImage, local: true, isImage };
       state.model.files[fid] = info;
       const med = {f, url: URL.createObjectURL(f), thumbs: null, thumbsPending: false, failed: false, waveform: null, wavePending: false, waveFailed: false};
       state.media.set(fid, med);
@@ -9995,7 +10000,7 @@ $('btnDelATrack').addEventListener('click', () => removeEmptyTrack('audio'));
    дорожках отменяются. Блок начинается с ключевой камеры; пустота на
    линейке начинает новый блок. Одну и ту же камеру нельзя дважды подряд.
    ============================================================ */
-const AC_MIN = 1, AC_MAX = 20; // выбор длины фрагмента: от 1 до 20 секунд
+const AC_MIN = 0.1, AC_MAX = 20; // выбор длины фрагмента: от 0.1 до 20 секунд
 const AC_NORM = 1;              // норма пользователя: 1 секунда — отрывки короче подсвечиваются
 const acSleep = ms => new Promise(r => setTimeout(r, ms));
 function openAutoCutPanel(){
@@ -10062,7 +10067,7 @@ function acUpdateRangeUI(){
   $('acHMax').style.left = maxP + '%';
   $('acZone').style.left = minP + '%';
   $('acZone').style.width = (maxP - minP) + '%';
-  $('acRangeVal').textContent = ac.min + ' – ' + ac.max + ' с';
+  $('acRangeVal').textContent = ac.min.toFixed(1).replace(/\.0$/,'') + ' – ' + ac.max.toFixed(1).replace(/\.0$/,'') + ' с';
 }
 function acHandleDrag(which){
   return (ev) => {
@@ -10072,10 +10077,10 @@ function acHandleDrag(which){
     const move = e => {
       const r = el.getBoundingClientRect();
       let v = AC_MIN + (e.clientX - r.left) / r.width * (AC_MAX - AC_MIN);
-      v = clamp(Math.round(v * 2) / 2, AC_MIN, AC_MAX);
+      v = clamp(Math.round(v * 10) / 10, AC_MIN, AC_MAX);
       const ac = state.autoCut;
-      if(which === 'min') ac.min = Math.min(v, ac.max - 0.5);
-      else ac.max = Math.max(v, ac.min + 0.5);
+      if(which === 'min') ac.min = Math.min(v, ac.max - 0.1);
+      else ac.max = Math.max(v, ac.min + 0.1);
       acUpdateRangeUI();
     };
     move(ev);
@@ -11903,7 +11908,7 @@ function applyLang(){
   for(const pair of TR_TEXT){ const el = $(pair[0]); if(el) el.textContent = t(pair[1]); }
   for(const pair of TR_TITLE){ const el = $(pair[0]); if(el) el.title = t(pair[1]); }
   const ep = $('emptyP'); if(ep) ep.innerHTML = t('empty_p');
-  const av = $('appVer'); if(av) av.innerHTML = t('app_ver') + ' <b>v4.57</b>';
+  const av = $('appVer'); if(av) av.innerHTML = t('app_ver') + ' <b>v4.59</b>';
   for(const id of ['lblVideo','lblAudio']) { const el = $(id); if(el) el.textContent = t(id === 'lblVideo' ? 'lbl_video' : 'lbl_audio'); }
   for(const pr of [['expTitleTxt','exp_title'],['lblRes','lbl_res'],['lblBr','lbl_br'],['lblRange','lbl_range'],['lblCodec','lbl_codec'],
                    ['lblStop','lbl_stop'],['lblStartExp','lbl_start_exp'],['lblCancel','lbl_cancel'],
@@ -11915,7 +11920,7 @@ function applyLang(){
     const el = $(pr[0]); if(el) el.innerHTML = t(pr[1]); // ссылки сохраняются в переводах
   }
   const nsPh = $('nsName'); if(nsPh) nsPh.placeholder = t('ns_ph');
-  const bs = $('brandSub'); if(bs) bs.textContent = 'v4.57 — ' + t('brand_sub');
+  const bs = $('brandSub'); if(bs) bs.textContent = 'v4.59 — ' + t('brand_sub');
   const lw = $('lbWheelHint'); if(lw) lw.textContent = t('wheel_hint');
   const rh = $('restHint'); if(rh) rh.textContent = t('rest_phrase');
   updateStatus();
@@ -12597,5 +12602,5 @@ try{
 
 updatePlayhead();
 </script>
-<script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a2fabb30ee86c60b',t:'MTc4NzQ5NDU0Ng=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</body>
 </html>

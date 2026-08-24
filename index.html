@@ -1311,6 +1311,9 @@ document.getElementById('crMenuX').addEventListener('click', function () {
 <input type="range" id="fps" min="2" max="60" value="50" step="1">
 <span class="val" id="fpsVal">50 fps</span>
 </div>
+      <div class="row" id="rowSeqMode">
+<label class="switch" for="seqMode63" style="max-width:100%" title="Каждый кадр исходника гарантированно попадает в файл — пропусков нет. Длинный ролик (больше ~600 кадров) режется на короткие блоки: каждый блок кодируется отдельно, потом блоки склеиваются в ОДИН готовый ролик со звуком. Снятая галочка — старый реалтайм-режим: быстрее, но при тяжёлых эффектах кадры могут пропадать"><input type="checkbox" id="seqMode63" checked>Покадровый экспорт — без пропусков кадров (длинные ролики собираются блоками и склеиваются в один)</label>
+</div>
       <div class="info" id="metaInfo"></div>
       <div class="info" id="framesInfo"></div>
       <div id="seqLive" style="display:none;margin:8px 0">
@@ -1366,7 +1369,7 @@ document.getElementById('crMenuX').addEventListener('click', function () {
 <a id="resultDownload" href="#">Скачать файл</a>
 <div id="resultSize"></div>
 </div>
-<footer style="text-align:center;color:var(--muted);font-size:12px;margin:26px 0 12px">Видеоферма версия V 10.18 ©Ampirion</footer>
+<footer style="text-align:center;color:var(--muted);font-size:12px;margin:26px 0 12px">Видеоферма версия V 10.19 ©Ampirion</footer>
 </main>
 
 <script>// gif.js 0.2.0 - https://github.com/jnordberg/gif.js
@@ -6055,7 +6058,7 @@ var btnMov = $('btnMov');
     }
     video.pause();
     if (typeof vcFxFramesSet === 'function') vcFxFramesSet(true);   // v57: вектор-эффект считается покадрово только в экспорте
-    var i = 0;
+    var i = (foreachFrame && foreachFrame.iStart > 0) ? Math.min(Math.round(foreachFrame.iStart), Math.max(0, n - 1)) : 0;   // v63g: блочная сборка — блок стартует со своей позиции таймлайна
     function step() {
       if (abortRequested) { wmAnimT = -1; if (typeof vcFxFramesSet === 'function') vcFxFramesSet(false); return Promise.reject(new Error('Остановлено пользователем')); }   // +v43
       if (i >= n) { wmAnimT = -1; if (typeof vcFxFramesSet === 'function') vcFxFramesSet(false); return Promise.resolve(); }
@@ -8680,13 +8683,15 @@ var btnMov = $('btnMov');
     if (typeof photos !== 'undefined' && photos.length) setStatus('Экспортирую видео из блока 1. Нужна фото-анимация из блока 2 — удалите видео крестиком ✕ в списке файлов и жмите кнопку снова.');
     if (typeof vcVideoFx !== 'undefined' && vcVideoFx && vcIsVideo()) { setStatus('Вектор-видео ВКЛ: WebM пишется в реальном времени и будет рваным. Жмите «Сохранить как MP4», при удалённом фоне — «MOV с альфой», или «Секвенция → ZIP» — кадры пройдут покадровую векторизацию. Выключить режим — кнопка «🎬 Сделать видео» во вкладке «Фото в вектор».'); return; }   // v57
     var d = outDims();
-    doSeqVideoExport({   // v62: покадровый сбор — кадры не пропадают
+    var optsW63 = {
       mimes: ['video/webm;codecs=vp9', 'video/webm;codecs=vp8', 'video/webm'],
       W: d.w, H: d.h, fps: fpsVal(),
       bitrate: 2500000, filename: 'animation', label: 'WebM готов',
       recordingMsg: 'Запись WebM в реальном времени', durationCap: Infinity, wantMp4: false, withAudio: true,
       trim: trimCurrentVal() || undefined   // v53: без «Применить» тоже работает
-    });
+    };
+    if (!seqOn63()) { doVideoExport(optsW63); return; }   // v63g: галочка снята — старый реалтайм (пропуски возможны)
+    doSeqVideoExport(optsW63);   // v62: покадровый сбор — кадры не пропадают
   });
 
   btnWebmTg.addEventListener('click', function () {
@@ -8722,7 +8727,7 @@ var btnMov = $('btnMov');
     if (typeof photos !== 'undefined' && photos.length) setStatus('Экспортирую видео из блока 1. Нужна фото-анимация из блока 2 — удалите видео крестиком ✕ в списке файлов и жмите кнопку снова.');
     if (typeof vcMp4VectorExport === 'function' && vcVideoFx && vcIsVideo()) { vcMp4VectorExport(); return; }   // v57: покадровая векторизация
     var d = outDims();
-    doSeqVideoExport({   // v62: покадровый сбор — кадры не пропадают
+    var optsM63 = {
       mimes: ['video/mp4;codecs=avc1.42E028', 'video/mp4;codecs=h264', 'video/mp4',
               'video/webm;codecs=vp9', 'video/webm;codecs=vp8', 'video/webm'],
       W: d.w, H: d.h, fps: fpsVal(),
@@ -8730,7 +8735,9 @@ var btnMov = $('btnMov');
       recordingMsg: 'Конвертация в ' + d.w + '×' + d.h + ', ' + fpsVal() + ' fps',
       durationCap: Infinity, wantMp4: true, withAudio: true,
       trim: trimCurrentVal() || undefined   // v53: без «Применить» тоже работает
-    });
+    };
+    if (!seqOn63()) { doVideoExport(optsM63); return; }   // v63g: галочка снята — старый реалтайм (пропуски возможны)
+    doSeqVideoExport(optsM63);   // v62: покадровый сбор — кадры не пропадают
   });
 
 
@@ -8858,6 +8865,40 @@ var btnMov = $('btnMov');
     '    var createFFmpegCore = new Function(d.coreSrc + "\\n;return createFFmpegCore;")();\n' +
     '    var core = await createFFmpegCore({ wasmBinary: new Uint8Array(d.wasmBuf) });\n' +
     '    var ext = (d.fmt === "webm" ? "png" : "jpg");\n' +
+    '    if (d.mode === "concat") {   /* v63g: склейка уже закодированных блоков в один ролик */\n' +
+    '      for (var pi = 0; pi < d.parts.length; pi++) { core.FS.writeFile("p" + ("0000" + pi).slice(-4) + "." + d.fmt, new Uint8Array(d.parts[pi])); }\n' +
+    '      var lst = "";\n' +
+    '      for (var pj = 0; pj < d.parts.length; pj++) { lst += "file p" + ("0000" + pj).slice(-4) + "." + d.fmt + "\\n"; }\n' +
+    '      core.FS.writeFile("list.txt", lst);\n' +
+    '      var cargs = ["-f", "concat", "-safe", "0", "-i", "list.txt"];\n' +
+    '      var chA = !!(d.audio && d.audio.buf && d.audio.buf.byteLength);\n' +
+    '      if (chA) {\n' +
+    '        core.FS.writeFile("a.in", new Uint8Array(d.audio.buf));\n' +
+    '        cargs.push("-i", "a.in");\n' +
+    '        var cs2 = (d.audio.segs && d.audio.segs.length) ? d.audio.segs : [[0, 86400]];\n' +
+    '        var cfc = "", clb = "";\n' +
+    '        for (var qi = 0; qi < cs2.length; qi++) {\n' +
+    '          var q0 = Math.max(0, +cs2[qi][0] || 0), q1 = (+cs2[qi][1] || 0); if (!(q1 > q0)) q1 = q0 + 86400;\n' +
+    '          cfc += "[1:a]atrim=start=" + q0.toFixed(3) + ":end=" + q1.toFixed(3) + ",asetpts=PTS-STARTPTS[as" + qi + "];";\n' +
+    '          clb += "[as" + qi + "]";\n' +
+    '        }\n' +
+    '        cfc += clb + "concat=n=" + cs2.length + ":v=0:a=1[ao]";\n' +
+    '        cargs.push("-filter_complex", cfc, "-map", "0:v", "-map", "[ao]");\n' +
+    '      }\n' +
+    '      cargs.push("-c:v", "copy");\n' +
+    '      if (chA && d.fmt === "webm") cargs.push("-c:a", "libopus", "-b:a", "128k");\n' +
+    '      if (chA && d.fmt !== "webm") cargs.push("-c:a", "aac", "-b:a", "160k");\n' +
+    '      if (d.fmt !== "webm") cargs.push("-movflags", "+faststart");\n' +
+    '      cargs.push("out." + d.fmt);\n' +
+    '      prog(0.07);\n' +
+    '      core.setProgress(function (p) { if (p && typeof p.progress === "number" && p.progress >= 0 && p.progress <= 1) prog(0.07 + p.progress * 0.93); });\n' +
+    '      core.exec.apply(core, cargs);\n' +
+    '      var cret = core.ret; try { core.reset(); } catch (x3) {}\n' +
+    '      if (cret !== 0) throw new Error("ffmpeg (склейка блоков) завершился с кодом " + cret);\n' +
+    '      var cout = core.FS.readFile("out." + d.fmt, { encoding: "binary" });\n' +
+    '      self.postMessage({ type: "done", data: cout }, [cout.buffer]);\n' +
+    '      return;\n' +
+    '    }\n' +
     '    for (var i = 0; i < d.frames.length; i++) {\n' +
     '      core.FS.writeFile("f" + ("0000" + i).slice(-4) + "." + ext, new Uint8Array(d.frames[i]));\n' +
     '      if (i % 30 === 0) prog(0.01 + (i / Math.max(1, d.frames.length)) * 0.05);\n' +
@@ -9261,7 +9302,7 @@ var btnMov = $('btnMov');
     im.src = seqLiveCv.toDataURL('image/jpeg', 0.6);
   }
 
-  function runSeqWorker(urls, frames, fps, br, fmt, audio) {   // v62
+  function runSeqWorker(urls, frames, fps, br, fmt, audio, p0, p1) {   // v62 · v63g: p0/p1 — окно прогресса (блочная сборка)
     return new Promise(function (resolve, reject) {
       var w;
       try { w = new Worker(URL.createObjectURL(new Blob([SEQ_WORKER_SRC], { type: 'text/javascript' }))); }
@@ -9278,7 +9319,7 @@ var btnMov = $('btnMov');
       var timer = setTimeout(function () { fin(reject, new Error('конвертер не ответил (timeout)')); }, 10 * 60 * 1000);
       w.onmessage = function (ev) {
         var m = ev.data || {};
-        if (m.type === 'progress') setProgress(0.60 + Math.max(0, Math.min(1, m.value)) * 0.38);
+        if (m.type === 'progress') setProgress((p0 == null ? 0.60 : p0) + Math.max(0, Math.min(1, m.value)) * ((p1 == null ? 0.98 : p1) - (p0 == null ? 0.60 : p0)));
         else if (m.type === 'done') fin(resolve, new Blob([m.data], { type: fmt === 'webm' ? 'video/webm' : 'video/mp4' }));
         else if (m.type === 'error') fin(reject, new Error(m.message || 'ошибка конвертера'));
       };
@@ -9288,6 +9329,145 @@ var btnMov = $('btnMov');
       var tr = frames.slice();   // кадры передаются в воркер — в памяти страницы их больше нет
       if (audio && audio.buf) tr.push(audio.buf);
       w.postMessage(msg, tr);
+    });
+  }
+
+  function seqOn63() { var el = $('seqMode63'); return !el || el.checked; }   // v63g: галочка покадрового экспорта (по умолчанию ВКЛ; снята — старый realtime)
+
+  function runSeqConcat63(urls, parts, fmt, audio, p0, p1) {   // v63g: склейка закодированных блоков в один ролик
+    return new Promise(function (resolve, reject) {
+      var w;
+      try { w = new Worker(URL.createObjectURL(new Blob([SEQ_WORKER_SRC], { type: 'text/javascript' }))); }
+      catch (e) { reject(e); return; }
+      var settled = false;
+      var fin = function (fn, v) {
+        if (settled) return;
+        settled = true;
+        clearTimeout(timer);
+        if (ffJob && ffJob.w === w) ffJob = null;
+        try { w.terminate(); } catch (x) {}
+        fn(v);
+      };
+      var timer = setTimeout(function () { fin(reject, new Error('конвертер не ответил (timeout)')); }, 10 * 60 * 1000);
+      w.onmessage = function (ev) {
+        var m = ev.data || {};
+        if (m.type === 'progress') setProgress((p0 == null ? 0.70 : p0) + Math.max(0, Math.min(1, m.value)) * ((p1 == null ? 0.97 : p1) - (p0 == null ? 0.70 : p0)));
+        else if (m.type === 'done') fin(resolve, new Blob([m.data], { type: fmt === 'webm' ? 'video/webm' : 'video/mp4' }));
+        else if (m.type === 'error') fin(reject, new Error(m.message || 'ошибка склейки блоков'));
+      };
+      w.onerror = function (e) { fin(reject, new Error((e && e.message) || 'ошибка worker')); };
+      ffJob = { w: w, abort: function () { fin(reject, new Error('Остановлено пользователем')); } };
+      var msg = { coreSrc: urls.coreSrc, wasmBuf: urls.wasmBuf, mode: 'concat', parts: parts, fps: 1, br: 0, fmt: fmt, audio: audio || null };
+      var tr = parts.slice();
+      if (audio && audio.buf) tr.push(audio.buf);
+      w.postMessage(msg, tr);
+    });
+  }
+
+  /* v63g: длинный ролик НЕ уходит в realtime с пропусками — режем на короткие блоки:
+     кадры блока собрали → сразу закодировали (сырьё ушло в воркер, память свободна) →
+     следующий блок. В конце блоки склеиваются в ОДИН ролик, звук целиком на всю длину. */
+  function doSeqChunked63(opts, C) {
+    var fps = C.fps, wantMp4 = C.wantMp4, fmt = C.fmt, br = C.br, spd = C.spd, nF = C.nF, d = C.d;
+    var bPx = Math.max(1, d.w * d.h);
+    var blk = Math.max(24, Math.min(C.seqMax, Math.floor(335544320 / (bPx * (wantMp4 ? 0.22 : 0.9)))));   // ≤ ~320 МБ сырых кадров на блок
+    var nB = Math.ceil(nF / blk);
+    if (nB > 300) {
+      setStatus('Ролик выходит в ' + nF + ' кадров (' + nB + ' блоков) — даже блоками не влезет. Укоротите фрагмент (блок 1), снизьте fps или уменьшите размер.');
+      return;
+    }
+    setBusy(true); hideResult();
+    try { auStopPlay(); } catch (eP) {}
+    seqStop63.want = false; window.__seqStopped63 = false;
+    var seqLiveEl = $('seqLive'), seqStopBtn = $('btnSeqStop');
+    if (seqLiveEl) seqLiveEl.style.display = 'block';
+    if (seqStopBtn) seqStopBtn.disabled = false;
+    var parts = [], chunkLens = [], frTot = 0, stoppedPart = false;
+    try { window.__seqDbg63 = { blocks: nB, blk: blk, chunkFrames: chunkLens, fmt: fmt, blocksDone: 0 }; } catch (eDG) {}
+    setStatus((wantMp4 ? 'MP4' : 'WebM') + ' — покадровая сборка блоками: всего ' + nF + ' кадров → ' + nB + ' блоков по ~' + blk + '. Каждый блок кодируется отдельно, потом склею в один ролик со звуком…');
+    setProgress(0.01);
+    var ffU = null, bi = 0;
+    function encBlock() {
+      if (bi >= nB || ((window.__seqStopped63 || seqStop63.want) && bi > 0)) return Promise.resolve();
+      var f0 = bi * blk, f1 = Math.min(nF, f0 + blk), cur = bi;
+      bi++;
+      var sl0 = 0.02 + 0.60 * (cur / nB), sl = 0.60 / nB;   // прогресс-окно блока: 65% кадры + 35% кодирование
+      var bufs = [];
+      return collectFrames({
+        hard: true, noStepStatus: true, fpsOverride: fps, nOverride: f1, iStart: f0,
+        stopNow: function () { return seqStop63.want; },
+        pmap: function (x) { var gi = x * f1; return sl0 + sl * 0.65 * Math.min(1, Math.max(0, (gi - f0) / Math.max(1, f1 - f0))); },
+        on: function (idx, canvas) {
+          setStatus((wantMp4 ? 'MP4' : 'WebM') + ' — блок ' + (cur + 1) + ' / ' + nB + ': кадр ' + (idx + 1) + ' / ' + nF + (seqStop63.want ? ' — останавливаю по вашей команде…' : '…'));
+          if (((idx - f0) & 1) === 0 || idx === f1 - 1) { try { seqLiveThumb(canvas); } catch (eTH) {} }
+          return new Promise(function (res) {
+            canvas.toBlob(function (blob) {
+              if (!blob) { res(); return; }
+              blob.arrayBuffer().then(function (ab) { bufs.push(ab); res(); }, function () { res(); });
+            }, wantMp4 ? 'image/jpeg' : 'image/png', 0.92);
+          });
+        }
+      }).then(function () {
+        if (!bufs.length) {
+          if (window.__seqStopped63 || seqStop63.want) return;   // стоп на самом старте блока — склеим те, что есть
+          throw new Error('не удалось получить ни одного кадра (блок ' + (cur + 1) + ')');
+        }
+        chunkLens.push(bufs.length); frTot += bufs.length;
+        setStatus('Блок ' + (cur + 1) + ' / ' + nB + ': ' + bufs.length + ' кадров готовы — кодирую в ' + (wantMp4 ? 'MP4' : 'WebM') + '…');
+        return runSeqWorker(ffU, bufs, fps, br, fmt, null, sl0 + sl * 0.65, sl0 + sl).then(function (blob) {
+          bufs = null;   // сырые кадры ушли в воркер
+          return blob.arrayBuffer();
+        }).then(function (ab) {
+          parts.push(ab);
+          try { window.__seqDbg63.blocksDone = parts.length; } catch (eDG2) {}
+          return encBlock();
+        });
+      });
+    }
+    loadFfmpegCore().then(function (u) { ffU = u; return encBlock(); }).then(function () {
+      if (seqLiveEl) seqLiveEl.style.display = 'none';
+      if (!parts.length) throw new Error('не удалось получить ни одного кадра');
+      stoppedPart = !!(window.__seqStopped63 || seqStop63.want);
+      var effDurA = frTot / fps;   // звук — ровно по собранным кадрам всех блоков
+      var nParts = parts.length;
+      setProgress(0.64);
+      var auP = Promise.resolve(null);
+      if (opts.withAudio && !(spd && spd.pct === 0)) {
+        var durVs = (isFinite(video.duration) && video.duration > 0) ? video.duration : 1e9;
+        var aSegs = spd ? [[0, effDurA]] : computeAudioSegs(C.t0, C.tEnd, C.skipA, C.skipB, Math.min(C.effDur, effDurA), durVs);
+        if (aSegs && video.src) {
+          if (spd || auOvActive() || auVideoFxActive()) {   // скорость/микс — обработанный WAV на всю длину
+            setStatus('Блоки закодированы (' + nParts + '). Готовлю звук (микс/эффекты)…');
+            auP = auPrepareVideoAudioWav(function (p) { setProgress(0.64 + p * 0.02); })
+              .then(function (ab) { return (ab && ab.byteLength) ? { buf: ab, segs: aSegs } : null; })
+              .catch(function (eA) { console.warn('[audio-fx]', eA); return null; });
+          } else {
+            auP = fetch(video.src).then(function (r) { return r.arrayBuffer(); })
+              .then(function (ab) { return { buf: ab, segs: aSegs }; })
+              .catch(function (eF) { console.warn('[seq-audio]', eF); return null; });
+          }
+        }
+      }
+      return auP.then(function (seqAud) {
+        setStatus('Склеиваю ' + nParts + ' блоков в один готовый ролик' + (seqAud ? ' со звуком' : ' без звука') + '…');
+        setProgress(0.70);
+        return runSeqConcat63(ffU, parts, fmt, seqAud, 0.70, 0.97).then(function (outBlob) {
+          parts = null;
+          wmAnimT = -1;
+          var ex = ' · покадровый сбор блоками: ' + frTot + ' кадров → ' + nParts + (nParts === 1 ? ' блок' : (nParts < 5 ? ' блока' : ' блоков')) + ', склеены в один файл @ ' + fps + ' fps (' + (wantMp4 ? 'H.264' : 'VP9') + (seqAud ? (wantMp4 ? '+AAC' : '+Opus') : ', без звука') + (seqAud && (auOvActive() || auVideoFxActive()) ? ' с миксом/эффектами звука' : ')')
+            + (spd ? (spd.curve ? ' · скорость по кривой (' + spdCurve63.pts.length + ' точек, звук Pitch-вариспид)' : ' · скорость ' + spd.pct + '% (' + (spd.method === 'flow' ? 'Optical Flow' : 'стандарт') + (spd.pct === 0 ? ', стоп-кадр' : '') + (spd.pct !== 0 ? ', звук ' + (spd.audio === 'stretch' ? 'Stretching' : 'Pitch') : '') + ')') : '')
+            + (stoppedPart ? ' · ⏹ остановлено вами — сохранено ' + frTot + ' кадров из ' + nF + ' как есть' : '');
+          finishExport(outBlob, wantMp4 ? 'video/mp4' : 'video/webm', opts, ex);
+        });
+      });
+    }).catch(function (err) {
+      parts = null;
+      wmAnimT = -1;
+      if (seqLiveEl) seqLiveEl.style.display = 'none';
+      if (abortRequested) { setProgress(null); setBusy(false); setStatus('Остановлено вами.'); return; }
+      console.warn('[seq-chunked]', err);
+      setProgress(null); setBusy(false);
+      setStatus((wantMp4 ? 'MP4' : 'WebM') + ': блочная покадровая сборка не удалась (' + ((err && err.message) || err) + '). Реалтайм-запасной вариант специально не включаю — он дал бы пропуски кадров. Укоротите фрагмент/снизьте fps или снимите галочку «Покадровый экспорт» и повторите.');
     });
   }
 
@@ -9309,21 +9489,10 @@ var btnMov = $('btnMov');
     var spdFpsNote63 = '';                                    // v63e: метка авто-fps — уедет в финальный статус
     var outDur = spdOutLen(effDur);                           // выходная длина с учётом скорости
     var nF = Math.max(1, Math.ceil(outDur * fps - 0.02));
-    if (nF > SEQ_MAX_FRAMES) {
-      var spdLong = spd && (spd.curve || (spd.pct > 0 && spd.pct !== 100));   // v63e: realtime УБИВАЕТ кривую/скорость — подбираем fps
-      if (spdLong) {
-        var fps0 = fps;
-        while (nF > SEQ_MAX_FRAMES && fps > 5) { fps = Math.max(5, Math.floor(fps * 0.7)); nF = Math.max(1, Math.ceil(outDur * fps - 0.02)); }
-        if (nF > SEQ_MAX_FRAMES) {
-          setStatus('С такой кривой/скоростью ролик растянется до ' + nF + ' кадров даже на 5 fps — покадровая сборка не влезет. Укоротите фрагмент в блоке 1 или смягчите замедление (кривая сохраняется только покадрово).');
-          return;
-        }
-        spdFpsNote63 = ' · ⚠ fps авто-снижен ' + fps0 + ' → ' + fps + ' ради точной кривой (покадрово, не realtime)';
-      } else {
-        setStatus('Кадров очень много (' + nF + ' > ' + SEQ_MAX_FRAMES + ') — иду старым realtime-сбором; для покадрового урежьте фрагмент или снизьте fps.');
-        doVideoExport(opts);
-        return;
-      }
+    var seqMaxF63 = (window.__seqMax63 | 0) > 8 ? (window.__seqMax63 | 0) : SEQ_MAX_FRAMES;   // v63g: тест-мостик размера блока
+    if (nF > seqMaxF63) {   // v63g: длинный ролик — режем на блоки и склеиваем в один файл со звуком (никакого realtime с пропусками)
+      doSeqChunked63(opts, { fps: fps, d: d, trim: trim, t0: t0, tEnd: tEnd, skipA: skipA, skipB: skipB, effDur: effDur, wantMp4: wantMp4, fmt: fmt, br: br, spd: spd, nF: nF, seqMax: seqMaxF63 });
+      return;
     }
     setBusy(true); hideResult();
     try { auStopPlay(); } catch (eP) {}
@@ -11185,6 +11354,8 @@ var btnMov = $('btnMov');
 </script>
 <script id="i18nPack">
 var I18N_EN = {
+"Покадровый экспорт — без пропусков кадров (длинные ролики собираются блоками и склеиваются в один)": "Frame-by-frame export — no dropped frames (long videos are assembled in chunks and merged into one file)",
+"Каждый кадр исходника гарантированно попадает в файл — пропусков нет. Длинный ролик (больше ~600 кадров) режется на короткие блоки: каждый блок кодируется отдельно, потом блоки склеиваются в ОДИН готовый ролик со звуком. Снятая галочка — старый реалтайм-режим: быстрее, но при тяжёлых эффектах кадры могут пропадать": "Every source frame is guaranteed to land in the file — no drops. A long video (over ~600 frames) is split into short chunks: each chunk is encoded separately, then the chunks are merged into ONE finished video with sound. Unchecked — legacy realtime mode: faster, but heavy effects may drop frames",
 "Цвет выбранного диапазона": "Color of the selected range",
 "Загрузить 3D LUT — цветовую схему из файла .cube (стандарт DaVinci Resolve; также читаются .3dl). LUT действует на видео поверх остального цветокора — и в превью, и в экспорте": "Load a 3D LUT — color scheme from a .cube file (DaVinci Resolve standard; .3dl is also supported). The LUT applies on top of the rest of color correction — both in preview and export",
 "Удалить LUT — видео вернётся к обычному цветокору без схемы из файла": "Remove the LUT — the video returns to regular color correction without a file scheme",
@@ -12130,5 +12301,5 @@ var I18N_RE = [["^(.+) сохранён ✔$", "$1 saved ✔"], ["^Кадры: (
 </script>
 <div id="toastWrap" aria-live="polite"></div>
 <button id="scrFloatBtn" type="button" title="Кнопка у края рамки записи: не попадает в запись (это элемент страницы, а не контент экрана)">⏺ Запись</button>
-<script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a2faa13fbdac34e5',t:'MTc4NzQ5MzQ4Mw=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+<script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a2fc4f509d8a9a50',t:'MTc4NzUxMTA5OA=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
