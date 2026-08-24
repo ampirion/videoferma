@@ -5891,131 +5891,397 @@ var btnMov = $('btnMov');
   if (dwClearAll45) dwClearAll = function () { dwRedoStack.length = 0; dwClearAll45(); dwUndoRedoUi(); };
   /* ==================== /v45a ==================== */
 
-  /* ==================== v63f: блок-матчинг Optical Flow («палец» из Photoshop) ====================
-     Кадр делится на сектора; для каждого сектора кадра A ищется самый похожий участок в кадре B
-     (минимум SAD по яркости) — это вектор движения элемента («шарик летит A→B»). Промежуточный
-     кадр дорисовывается «в полёте»: сектор ставится на долю k пути. Если кадры слишком разные
-     (смена плана) — никаких долгих попыток: просто мягкий кроссфейд. Ненадёжные сектора (большая
-     ошибка матчинга) не варпятся — там остаётся плавное смешение. Производительность ограничена:
-     анализ бежит по прореженной яркостной сетке (константная стоимость независимо от разрешения). */
+  
+  
+  /* ==================== v63f: DENSE OPTICAL FLOW — Hybrid Block-Match + Horn-Schunck + forward warp ====================
+     Заменён блок-матчинг на честный dense flow из примера Optikal_flow__interpolation.html
+     + гибрид для больших смещений: на самом грубом уровне пирамиды делается block-matching,
+       затем уточняется Horn-Schunck. Это даёт и плавность, и характерные артефакты растягивания
+       при 1% замедлении, как в RIFE / Premiere.
+     При смене плана — кроссфейд. */
   var ofCache63 = { key: '', fld: null };
-  /* диагностический мостик для e2e/проверок */
   window.__ofTest63 = {
     field: function (ctxA2, ctxB2, w, h, key) { return ofField63(ctxA2, ctxB2, w, h, key || ('t' + Math.random())); },
     morph: function (out, cAX, cBX, cWAX, cWBX, w, h, k, fld) { return ofMorph63(out, cAX, cBX, cWAX, cWBX, w, h, k, fld); }
   };
-  function ofLuma63(ctx2, w, h) {   // яркостная сетка с прореживанием — константная стоимость
-    var gs = Math.max(1, Math.ceil(Math.sqrt(w * h / 64000)));   // сетка ≤ ~320×200 узлов
-    var W2 = Math.max(1, Math.floor(w / gs)), H2 = Math.max(1, Math.floor(h / gs));
-    var id;
-    try { id = ctx2.getImageData(0, 0, w, h).data; } catch (eG) { return null; }
-    var lu = new Uint8Array(W2 * H2);
-    for (var y = 0; y < H2; y++) {
-      var row = y * gs * w;
-      for (var x = 0; x < W2; x++) {
-        var o = (row + x * gs) * 4;
-        lu[y * W2 + x] = (id[o] * 77 + id[o + 1] * 150 + id[o + 2] * 29) >> 8;
+
+  function toGray63(rgba, w, h){
+    const out = new Float32Array(w*h);
+    for(let i=0;i<w*h;i++){
+      const j=i*4;
+      const r=rgba[j], g=rgba[j+1], b=rgba[j+2], a=rgba[j+3]/255;
+      out[i] = (0.299*r + 0.587*g + 0.114*b) * (a||1);
+    }
+    return out;
+  }
+  function downscaleGrayBilinear63(src, srcW, srcH, dstW, dstH){
+    const dst = new Float32Array(dstW*dstH);
+    const xRatio = srcW/dstW, yRatio = srcH/dstH;
+    for(let y=0;y<dstH;y++){
+      const sy = y*yRatio;
+      const y0 = Math.floor(sy), y1 = Math.min(y0+1, srcH-1);
+      const fy = sy - y0;
+      const row0 = y0*srcW, row1 = y1*srcW;
+      for(let x=0;x<dstW;x++){
+        const sx = x*xRatio;
+        const x0 = Math.floor(sx), x1 = Math.min(x0+1, srcW-1);
+        const fx = sx - x0;
+        const i00 = row0 + x0, i10 = row0 + x1, i01 = row1 + x0, i11 = row1 + x1;
+        dst[y*dstW+x] = src[i00]*(1-fx)*(1-fy) + src[i10]*fx*(1-fy) + src[i01]*(1-fx)*fy + src[i11]*fx*fy;
       }
     }
-    return { lu: lu, W: W2, H: H2, gs: gs };
+    return dst;
   }
-  function ofField63(ctxA2, ctxB2, w, h, cacheKey) {   // поле векторов для пары кадров (кэш по паре)
-    if (ofCache63.key === cacheKey && ofCache63.fld) return ofCache63.fld;
-    var LA = ofLuma63(ctxA2, w, h), LB = ofLuma63(ctxB2, w, h);
-    if (!LA || !LB) { var fldNull = { cut: true }; ofCache63.key = cacheKey; ofCache63.fld = fldNull; return fldNull; }
-    var W2 = LA.W, H2 = LA.H, gs = LA.gs;
-    /* смена плана? — средняя разница кадров по грубой сетке */
-    var md = 0, mcnt = 0;
-    for (var yy = 0; yy < H2; yy += 6) for (var xx = 0; xx < W2; xx += 6) {
-      var dfd = LA.lu[yy * W2 + xx] - LB.lu[yy * W2 + xx]; md += dfd < 0 ? -dfd : dfd; mcnt++;
+  function upscaleFlow63(flowX, flowY, srcW, srcH, dstW, dstH){
+    const dstX = new Float32Array(dstW*dstH);
+    const dstY = new Float32Array(dstW*dstH);
+    for(let y=0;y<dstH;y++){
+      const sy = y * (srcH/dstH);
+      const y0 = Math.floor(sy), y1 = Math.min(y0+1, srcH-1);
+      const fy = sy - y0;
+      const row0 = y0*srcW, row1 = y1*srcW;
+      for(let x=0;x<dstW;x++){
+        const sx = x * (srcW/dstW);
+        const x0 = Math.floor(sx), x1 = Math.min(x0+1, srcW-1);
+        const fx = sx - x0;
+        const i00 = row0 + x0, i10 = row0 + x1, i01 = row1 + x0, i11 = row1 + x1;
+        const vx = flowX[i00]*(1-fx)*(1-fy) + flowX[i10]*fx*(1-fy) + flowX[i01]*(1-fx)*fy + flowX[i11]*fx*fy;
+        const vy = flowY[i00]*(1-fx)*(1-fy) + flowY[i10]*fx*(1-fy) + flowY[i01]*(1-fx)*fy + flowY[i11]*fx*fy;
+        const idx = y*dstW+x;
+        dstX[idx]=vx*(dstW/srcW);
+        dstY[idx]=vy*(dstH/srcH);
+      }
     }
-    md /= Math.max(1, mcnt);
-    if (md > 55) {   // другой план — не мудрим: кроссфейд (и никаких задержек)
-      var fldCut = { cut: true }; ofCache63.key = cacheKey; ofCache63.fld = fldCut; return fldCut;
+    return {x:dstX, y:dstY};
+  }
+  function warpGray63(src, srcW, srcH, flowX, flowY){
+    const dst = new Float32Array(srcW*srcH);
+    for(let y=0;y<srcH;y++){
+      for(let x=0;x<srcW;x++){
+        const idx = y*srcW+x;
+        let sx = x + flowX[idx], sy = y + flowY[idx];
+        if(sx<0) sx=0; if(sx>srcW-1.01) sx=srcW-1.01;
+        if(sy<0) sy=0; if(sy>srcH-1.01) sy=srcH-1.01;
+        const x0 = Math.floor(sx), y0 = Math.floor(sy);
+        const x1 = Math.min(x0+1, srcW-1), y1 = Math.min(y0+1, srcH-1);
+        const fxr = sx - x0, fyr = sy - y0;
+        const i00 = y0*srcW+x0, i10 = y0*srcW+x1, i01 = y1*srcW+x0, i11 = y1*srcW+x1;
+        dst[idx] = src[i00]*(1-fxr)*(1-fyr) + src[i10]*fxr*(1-fyr) + src[i01]*(1-fxr)*fyr + src[i11]*fxr*fyr;
+      }
     }
-    var bs = 12;   // сектор в узлах сетки
-    var nbx = Math.max(1, Math.floor(W2 / bs)), nby = Math.max(1, Math.floor(H2 / bs));
-    var vx = new Float32Array(nbx * nby), vy = new Float32Array(nbx * nby), rel = new Uint8Array(nbx * nby);
-    var R = Math.max(16, Math.min(72, Math.round((w / 8) / gs)));   // радиус поиска ≈1/8 ширины кадра (в узлах сетки)
-    var ss = 3;   // шаг сэмплов внутри сектора
-    for (var by2 = 0; by2 < nby; by2++) for (var bx2 = 0; bx2 < nbx; bx2++) {
-      var x0 = bx2 * bs, y0 = by2 * bs, bi = by2 * nbx + bx2;
-      var bestS = 1e18, bdx = 0, bdy = 0;
-      for (var cy = -R; cy <= R; cy += 2) {
-        var yb = y0 + cy;
-        if (yb < 0 || yb + bs > H2) continue;
-        for (var cx = -R; cx <= R; cx += 2) {
-          var xb = x0 + cx;
-          if (xb < 0 || xb + bs > W2) continue;
-          var sAcc = 0, bail = false;
-          for (var sy = 0; sy < bs && !bail; sy += ss) {
-            var rA = (y0 + sy) * W2, rB = (yb + sy) * W2;
-            for (var sx = 0; sx < bs; sx += ss) {
-              var df = LA.lu[rA + x0 + sx] - LB.lu[rB + xb + sx];
-              sAcc += df < 0 ? -df : df;
-              if (sAcc >= bestS) { bail = true; break; }   // ранний отвал — сильно ускоряет
+    return dst;
+  }
+  function hornSchunck63(I0, I1, w, h, alpha, iters){
+    const N=w*h;
+    const Ix = new Float32Array(N), Iy = new Float32Array(N), It = new Float32Array(N);
+    for(let y=1;y<h-1;y++){
+      const row = y*w;
+      for(let x=1;x<w-1;x++){
+        const idx = row+x;
+        Ix[idx] = (I0[idx+1]-I0[idx-1] + I1[idx+1]-I1[idx-1])*0.25;
+        Iy[idx] = (I0[idx+w]-I0[idx-w] + I1[idx+w]-I1[idx-w])*0.25;
+        It[idx] = I1[idx]-I0[idx];
+      }
+    }
+    const u = new Float32Array(N), v = new Float32Array(N);
+    const alpha2 = alpha*alpha;
+    for(let iter=0; iter<iters; iter++){
+      for(let y=1;y<h-1;y++){
+        const row = y*w;
+        for(let x=1;x<w-1;x++){
+          const idx = row+x;
+          const u_avg = (u[idx-1]+u[idx+1]+u[idx-w]+u[idx+w])*0.25;
+          const v_avg = (v[idx-1]+v[idx+1]+v[idx-w]+v[idx+w])*0.25;
+          const denom = alpha2 + Ix[idx]*Ix[idx] + Iy[idx]*Iy[idx];
+          if(denom>1e-6){
+            const num = Ix[idx]*u_avg + Iy[idx]*v_avg + It[idx];
+            const k = num/denom;
+            u[idx] = u_avg - Ix[idx]*k;
+            v[idx] = v_avg - Iy[idx]*k;
+          }
+        }
+      }
+    }
+    return {x:u, y:v};
+  }
+  function buildPyramid63(gray, w, h, levels){
+    const pyr=[]; pyr.push({gray,w,h});
+    let curGray=gray, curW=w, curH=h;
+    for(let l=1;l<levels;l++){
+      const nw = Math.max(1, Math.floor(curW/2));
+      const nh = Math.max(1, Math.floor(curH/2));
+      const ng = downscaleGrayBilinear63(curGray, curW, curH, nw, nh);
+      pyr.push({gray:ng,w:nw,h:nh});
+      curGray=ng; curW=nw; curH=nh;
+    }
+    return pyr;
+  }
+  // --- block matching for coarsest level (handles large motion) ---
+  function blockMatchInit63(gray0, gray1, w, h, radius){
+    const flowX = new Float32Array(w*h);
+    const flowY = new Float32Array(w*h);
+    const patch = 2; // 5x5
+    const step = Math.max(1, Math.floor(Math.min(w,h)/64)); // subsample for speed, but keep dense enough
+    for(let y=patch; y<h-patch; y+=step){
+      for(let x=patch; x<w-patch; x+=step){
+        const idx = y*w+x;
+        let bestSAD = 1e9, bestDx=0, bestDy=0;
+        for(let dy=-radius; dy<=radius; dy++){
+          const y1 = y+dy;
+          if(y1-patch<0 || y1+patch>=h) continue;
+          for(let dx=-radius; dx<=radius; dx++){
+            const x1 = x+dx;
+            if(x1-patch<0 || x1+patch>=w) continue;
+            let sad=0;
+            for(let py=-patch; py<=patch; py++){
+              const r0 = (y+py)*w;
+              const r1 = (y1+py)*w;
+              for(let px=-patch; px<=patch; px++){
+                const d = gray0[r0 + x+px] - gray1[r1 + x1+px];
+                sad += d<0?-d:d;
+                if(sad>=bestSAD) break;
+              }
+              if(sad>=bestSAD) break;
+            }
+            // penalize large jumps slightly to prefer small motion on ties
+            const pen = sad + 0.25*(Math.abs(dx)+Math.abs(dy));
+            if(pen<bestSAD){ bestSAD=pen; bestDx=dx; bestDy=dy; }
+          }
+        }
+        if(bestSAD < 400){
+          // fill block around
+          for(let yy=-step; yy<=step; yy++) for(let xx=-step; xx<=step; xx++){
+            const yy2=y+yy, xx2=x+xx;
+            if(yy2<0||yy2>=h||xx2<0||xx2>=w) continue;
+            const j=yy2*w+xx2;
+            flowX[j]=bestDx;
+            flowY[j]=bestDy;
+          }
+        }
+      }
+    }
+    return {x:flowX, y:flowY};
+  }
+  function computeFlowPyramidalSync63(gray0, gray1, w, h, levels, alpha, itersPerLevel){
+    const pyr0 = buildPyramid63(gray0,w,h,levels);
+    const pyr1 = buildPyramid63(gray1,w,h,levels);
+    let flowX=null, flowY=null, prevW=0, prevH=0;
+    for(let l=levels-1; l>=0; l--){
+      const curW = pyr0[l].w, curH = pyr0[l].h;
+      if(flowX===null){
+        // coarsest: hybrid init
+        const radius = Math.max(8, Math.min(24, Math.floor(Math.min(curW,curH)/3)));
+        const bm = blockMatchInit63(pyr0[l].gray, pyr1[l].gray, curW, curH, radius);
+        flowX = bm.x; flowY = bm.y;
+        const warped1 = warpGray63(pyr1[l].gray, curW, curH, flowX, flowY);
+        const res = hornSchunck63(pyr0[l].gray, warped1, curW, curH, alpha, itersPerLevel[l]);
+        for(let i=0;i<curW*curH;i++){ flowX[i]+=res.x[i]; flowY[i]+=res.y[i]; }
+      }else{
+        const up = upscaleFlow63(flowX, flowY, prevW, prevH, curW, curH);
+        flowX=up.x; flowY=up.y;
+        const warped1 = warpGray63(pyr1[l].gray, curW, curH, flowX, flowY);
+        const res = hornSchunck63(pyr0[l].gray, warped1, curW, curH, alpha, itersPerLevel[l]);
+        for(let i=0;i<curW*curH;i++){ flowX[i]+=res.x[i]; flowY[i]+=res.y[i]; }
+      }
+      prevW=curW; prevH=curH;
+    }
+    return {x:flowX, y:flowY, w, h};
+  }
+  function getRgbaGrayFromCtx63(ctx, w, h, tw, th){
+    const canv = document.createElement('canvas');
+    canv.width=tw; canv.height=th;
+    const cctx = canv.getContext('2d', {willReadFrequently:true});
+    try{
+      if(ctx && ctx.canvas) cctx.drawImage(ctx.canvas, 0,0, tw, th);
+      else if(ctx) cctx.drawImage(ctx, 0,0, tw, th);
+    }catch(e){
+      try{
+        const full = ctx.getImageData(0,0,w,h);
+        const src = full.data;
+        const dst = cctx.createImageData(tw,th);
+        const xRatio = w/tw, yRatio = h/th;
+        for(let y=0;y<th;y++){
+          const sy = y*yRatio;
+          const y0 = Math.floor(sy), y1 = Math.min(y0+1, h-1);
+          const fy = sy-y0;
+          for(let x=0;x<tw;x++){
+            const sx = x*xRatio;
+            const x0 = Math.floor(sx), x1 = Math.min(x0+1, w-1);
+            const fx = sx-x0;
+            const i00 = (y0*w+x0)*4, i10=(y0*w+x1)*4, i01=(y1*w+x0)*4, i11=(y1*w+x1)*4;
+            const di = (y*tw+x)*4;
+            for(let k=0;k<4;k++){
+              dst.data[di+k] = src[i00+k]*(1-fx)*(1-fy) + src[i10+k]*fx*(1-fy) + src[i01+k]*(1-fx)*fy + src[i11+k]*fx*fy;
             }
           }
-          var sPen = sAcc + 0.5 * (Math.abs(cx) + Math.abs(cy));   // v63f: на ничью — ближайший сдвиг (ровные поля иначе матчатся «куда попало»)
-          if (sPen < bestS) { bestS = sPen; bdx = cx; bdy = cy; }
+        }
+        cctx.putImageData(dst,0,0);
+      }catch(e2){}
+    }
+    let data;
+    try{ data = cctx.getImageData(0,0,tw,th).data; }catch(e){ return null; }
+    const gray = toGray63(data, tw, th);
+    return {rgba:data, gray:gray};
+  }
+  // v3: forward splat foreground-only — без вспышек, классический optical flow без дырок
+  function interpolateForward63(rgba0, rgba1, flow01, flow10, w, h, t){
+    const N=w*h;
+    const accR = new Float32Array(N), accG=new Float32Array(N), accB=new Float32Array(N), accA=new Float32Array(N), weight=new Float32Array(N);
+    function splat(src, fX, fY, tFactor, wFactor){
+      for(let y=0;y<h;y++){
+        for(let x=0;x<w;x++){
+          const idx = y*w+x;
+          const sIdx = idx*4;
+          // только непрозрачные / яркие пиксели — фон не тащим, это убирает вспышки
+          const r0 = src[sIdx], g0 = src[sIdx+1], b0 = src[sIdx+2], a0 = src[sIdx+3];
+          if(a0<10) continue;
+          // эвристика для видео: очень тёмные пиксели считаем фоном, если рядом есть яркие — но для универсальности берём все с a>10
+          // для теста с чёрным фоном можно добавить проверку яркости: if(r0+g0+b0 < 30) continue; — но оставляем мягче
+          if(r0<8 && g0<8 && b0<8){
+            // чёрный фон — пропускаем, чтобы не создавать серые вспышки при смешении
+            // однако если объект тёмный, это может его съесть, поэтому проверяем ещё и вес
+            // оставляем только если яркость <10 и это не часть объекта — в видео фон обычно не чисто чёрный
+            // для безопасности: если a>10 и яркость <15 — считаем фоном только если flow маленький? упростим: пропускаем чисто чёрный
+            if(r0+g0+b0 < 12) continue;
+          }
+          const dx = fX[idx], dy = fY[idx];
+          if(!isFinite(dx)||!isFinite(dy)) continue;
+          // ограничим безумные вектора — защита от выбросов
+          if(Math.abs(dx)>w*0.6 || Math.abs(dy)>h*0.6) continue;
+          const xt = x + dx*tFactor;
+          const yt = y + dy*tFactor;
+          if(xt<0 || xt>=w-1 || yt<0 || yt>=h-1) continue;
+          const x0 = Math.floor(xt), y0=Math.floor(yt);
+          const fx = xt-x0, fy = yt-y0;
+          const w00=(1-fx)*(1-fy), w10=fx*(1-fy), w01=(1-fx)*fy, w11=fx*fy;
+          const wf = wFactor;
+          let d = y0*w+x0;
+          accR[d]+=r0*w00*wf; accG[d]+=g0*w00*wf; accB[d]+=b0*w00*wf; accA[d]+=a0*w00*wf; weight[d]+=w00*wf;
+          if(x0+1<w){ d=y0*w+x0+1; accR[d]+=r0*w10*wf; accG[d]+=g0*w10*wf; accB[d]+=b0*w10*wf; accA[d]+=a0*w10*wf; weight[d]+=w10*wf; }
+          if(y0+1<h){
+            d=(y0+1)*w+x0; accR[d]+=r0*w01*wf; accG[d]+=g0*w01*wf; accB[d]+=b0*w01*wf; accA[d]+=a0*w01*wf; weight[d]+=w01*wf;
+            if(x0+1<w){ d=(y0+1)*w+x0+1; accR[d]+=r0*w11*wf; accG[d]+=g0*w11*wf; accB[d]+=b0*w11*wf; accA[d]+=a0*w11*wf; weight[d]+=w11*wf; }
+          }
         }
       }
-      var per = (bestS - 0.5 * (Math.abs(bdx) + Math.abs(bdy))) / (Math.ceil(bs / ss) * Math.ceil(bs / ss));   // чистая ошибка на сэмпл (без штрафа дистанции)
-      if (per > 30) { bdx = 0; bdy = 0; rel[bi] = 0; }   // ненадёжный сектор: не варпим (останется мягкий микс)
-      else rel[bi] = 1;
-      vx[bi] = bdx * gs; vy[bi] = bdy * gs;
     }
-    /* медиана 3×3 по полю: нутро крупного объекта наследует общий сдвиг, одиночные выбросы отсекаются */
-    var mvx = new Float32Array(nbx * nby), mvy = new Float32Array(nbx * nby);
-    for (var my2 = 0; my2 < nby; my2++) for (var mx2 = 0; mx2 < nbx; mx2++) {
-      var bi3 = my2 * nbx + mx2;
-      if (!rel[bi3]) continue;
-      var lx = [], ly = [];
-      for (var ny2 = Math.max(0, my2 - 1); ny2 <= Math.min(nby - 1, my2 + 1); ny2++)
-        for (var nx2 = Math.max(0, mx2 - 1); nx2 <= Math.min(nbx - 1, mx2 + 1); nx2++) {
-          var biN = ny2 * nbx + nx2;
-          if (!rel[biN]) continue;
-          lx.push(vx[biN]); ly.push(vy[biN]);
-        }
-      if (!lx.length) continue;
-      lx.sort(function (a, b) { return a - b; }); ly.sort(function (a, b) { return a - b; });
-      var medx = lx[lx.length >> 1], medy = ly[ly.length >> 1];
-      if (medx === 0 && medy === 0 && (vx[bi3] !== 0 || vy[bi3] !== 0)) { medx = vx[bi3]; medy = vy[bi3]; }   // края тонкого объекта медианой не давим
-      mvx[bi3] = medx; mvy[bi3] = medy;
+    splat(rgba0, flow01.x, flow01.y, t, 1-t);
+    splat(rgba1, flow10.x, flow10.y, 1-t, t);
+    const out = new Uint8ClampedArray(N*4);
+    // фон — берём из blend исходников, чтобы не было чёрных дыр, но без вспышек
+    for(let i=0;i<N;i++){
+      const o=i*4;
+      const wgt = weight[i];
+      if(wgt>1e-6){
+        out[o]=Math.round(accR[i]/wgt);
+        out[o+1]=Math.round(accG[i]/wgt);
+        out[o+2]=Math.round(accB[i]/wgt);
+        out[o+3]=Math.round(accA[i]/wgt);
+      }else{
+        // дырка — мягкий blend исходников (без вспышки, просто фон)
+        const r0=rgba0[o], g0=rgba0[o+1], b0=rgba0[o+2], a0=rgba0[o+3];
+        const r1=rgba1[o], g1=rgba1[o+1], b1=rgba1[o+2], a1=rgba1[o+3];
+        out[o]=Math.round(r0*(1-t)+r1*t);
+        out[o+1]=Math.round(g0*(1-t)+g1*t);
+        out[o+2]=Math.round(b0*(1-t)+b1*t);
+        out[o+3]=Math.round(a0*(1-t)+a1*t);
+      }
     }
-    var raws = { vx: vx, vy: vy };   // диагностика: сырые векторы до медианы
-    vx = mvx; vy = mvy;
-    var fld = { cut: false, nbx: nbx, nby: nby, bsP: bs * gs, vx: vx, vy: vy, rel: rel, raw: raws };
-    ofCache63.key = cacheKey; ofCache63.fld = fld;
+    return out;
+  }
+  function interpolateForward63(rgba0, rgba1, flow01, flow10, w, h, t){
+    const N=w*h;
+    const out = new Uint8ClampedArray(N*4);
+    const mt = 1-t;
+    for(let y=0;y<h;y++){
+      for(let x=0;x<w;x++){
+        const idx = y*w+x;
+        const fx01 = flow01.x[idx], fy01 = flow01.y[idx];
+        const fx10 = flow10.x[idx], fy10 = flow10.y[idx];
+        // backward: откуда пришёл пиксель в промежуточный кадр
+        const sxA = x - fx01*t;
+        const syA = y - fy01*t;
+        const sxB = x - fx10*mt;
+        const syB = y - fy10*mt;
+        const sA = sampleBilinear63(rgba0, w, h, sxA, syA);
+        const sB = sampleBilinear63(rgba1, w, h, sxB, syB);
+        const o = idx*4;
+        // мягкое смешение без вспышек: (1-t)*A + t*B
+        out[o]   = Math.round(sA[0]*mt + sB[0]*t);
+        out[o+1] = Math.round(sA[1]*mt + sB[1]*t);
+        out[o+2] = Math.round(sA[2]*mt + sB[2]*t);
+        out[o+3] = Math.round(sA[3]*mt + sB[3]*t);
+      }
+    }
+    return out;
+  }
+
+  function ofField63(ctxA2, ctxB2, w, h, cacheKey){
+    if (ofCache63.key === cacheKey && ofCache63.fld) return ofCache63.fld;
+    const procLong = 384;
+    const aspect = w/h;
+    let procW, procH;
+    if(aspect>1){ procW=procLong; procH=Math.max(32, Math.round(procLong/aspect)); }
+    else { procH=procLong; procW=Math.max(32, Math.round(procLong*aspect)); }
+    if(w < procW && h < procH){ procW=w; procH=h; }
+
+    const d0 = getRgbaGrayFromCtx63(ctxA2, w, h, procW, procH);
+    const d1 = getRgbaGrayFromCtx63(ctxB2, w, h, procW, procH);
+    if(!d0 || !d1){
+      const fldCut={cut:true}; ofCache63.key=cacheKey; ofCache63.fld=fldCut; return fldCut;
+    }
+    let md=0, cnt=0;
+    const step = Math.max(1, Math.floor(procW/64));
+    for(let yy=0; yy<procH; yy+=step*2){
+      for(let xx=0; xx<procW; xx+=step*2){
+        const i=yy*procW+xx;
+        const df = d0.gray[i]-d1.gray[i];
+        md+= df<0? -df:df; cnt++;
+      }
+    }
+    md/=Math.max(1,cnt);
+    if(md>52){
+      const fldCut={cut:true}; ofCache63.key=cacheKey; ofCache63.fld=fldCut; return fldCut;
+    }
+    const levels = procW>320? 5 : 4;
+    const alpha = 14;
+    let iters;
+    if(levels===5) iters=[20,25,35,50,80];
+    else iters=[25,35,50,80];
+
+    const flow01 = computeFlowPyramidalSync63(d0.gray, d1.gray, procW, procH, levels, alpha, iters);
+    const flow10 = computeFlowPyramidalSync63(d1.gray, d0.gray, procW, procH, levels, alpha, iters);
+
+    const fld = {cut:false, procW:procW, procH:procH, rgba0:d0.rgba, rgba1:d1.rgba, flow01:flow01, flow10:flow10, w:w, h:h};
+    ofCache63.key=cacheKey; ofCache63.fld=fld;
     return fld;
   }
-  function ofMorph63(out, cAX, cBX, cWAX, cWBX, w, h, k, fld) {
-    var ctxWA = cWAX.getContext('2d'), ctxWB = cWBX.getContext('2d');
-    if (!fld || fld.cut) {   // смена плана / сбой анализа — безопасный кроссфейд
+
+  function ofMorph63(out, cAX, cBX, cWAX, cWBX, w, h, k, fld){
+    if (!fld || fld.cut){
       out.globalAlpha = 1; out.drawImage(cAX, 0, 0);
       out.globalAlpha = k; out.drawImage(cBX, 0, 0);
       out.globalAlpha = 1; return;
     }
-    /* два полных слоя-«полёта»: сектора сдвинуты на вектор × k; остальное — исходные кадры */
-    ctxWA.globalAlpha = 1; ctxWA.drawImage(cAX, 0, 0);
-    ctxWB.globalAlpha = 1; ctxWB.drawImage(cBX, 0, 0);
-    var bs = fld.bsP;
-    for (var by3 = 0; by3 < fld.nby; by3++) for (var bx3 = 0; bx3 < fld.nbx; bx3++) {
-      var bi2 = by3 * fld.nbx + bx3;
-      if (!fld.rel[bi2]) continue;
-      var ddx = fld.vx[bi2], ddy = fld.vy[bi2];
-      if (!ddx && !ddy) continue;
-      var x0p = bx3 * bs, y0p = by3 * bs;
-      var sxB = Math.min(w - bs, Math.max(0, x0p + ddx)), syB = Math.min(h - bs, Math.max(0, y0p + ddy));   // там этот элемент находится в кадре B
-      var tx = x0p + ddx * k, ty = y0p + ddy * k;   // промежуточная позиция «в полёте»
-      try { ctxWA.drawImage(cBX, x0p, y0p, bs, bs, x0p, y0p, bs, bs); } catch (eB1) {}   // фон из кадра B на освободившемся месте (анти-призрак)
-      try { ctxWA.drawImage(cAX, x0p, y0p, bs, bs, tx, ty, bs, bs); } catch (eD) {}      // объект в полёте
-      try { ctxWB.drawImage(cAX, sxB, syB, bs, bs, sxB, syB, bs, bs); } catch (eB2) {}
-      try { ctxWB.drawImage(cBX, sxB, syB, bs, bs, tx, ty, bs, bs); } catch (eD2) {}
+    try{
+      const procW=fld.procW, procH=fld.procH;
+      const outRgba = interpolateForward63(fld.rgba0, fld.rgba1, fld.flow01, fld.flow10, procW, procH, k);
+      const tmp = document.createElement('canvas');
+      tmp.width=procW; tmp.height=procH;
+      const tctx = tmp.getContext('2d');
+      tctx.putImageData(new ImageData(new Uint8ClampedArray(outRgba), procW, procH),0,0);
+      out.clearRect(0,0,w,h);
+      out.imageSmoothingEnabled=true;
+      out.imageSmoothingQuality='high';
+      out.globalAlpha=1;
+      out.drawImage(tmp, 0,0, w, h);
+    }catch(e){
+      try{
+        out.globalAlpha = 1; out.drawImage(cAX, 0, 0);
+        out.globalAlpha = k; out.drawImage(cBX, 0, 0);
+        out.globalAlpha = 1;
+      }catch(e2){}
     }
-    out.globalAlpha = 1; out.drawImage(cWAX, 0, 0);
-    out.globalAlpha = k; out.drawImage(cWBX, 0, 0);
-    out.globalAlpha = 1;
   }
 
   function seekTo(t) {
@@ -6041,13 +6307,17 @@ var btnMov = $('btnMov');
     var spd = (typeof spd63 === 'function') ? spd63() : null;                     // v63: применённая скорость
     var spdPct = spd ? spd.pct : 100;
     var outLen = (typeof spdOutLen === 'function') ? spdOutLen(clipLen) : clipLen;
+    /* v63f: Optical Flow — промежуточный кадр дорисовывается по векторам */
+    var flow = !!(spd && spd.method === 'flow' && (spd.curve || (spdPct > 0 && spdPct < 100))); // fix srcFps
+    var srcFpsSafe = (typeof srcFps !== 'undefined' && srcFps > 1) ? srcFps : (function(){ try{ return parseFloat((document.getElementById('fps')||{}).value) || parseFloat((document.getElementById('trimFps')||{}).value) || 30; }catch(e){ return 30; } })();
+    var maxFrames63 = flow ? 600 : MAX_FRAMES; // при Optical Flow даём больше кадров для 1% замедления
     var n = (foreachFrame && foreachFrame.nOverride > 0) ? Math.round(foreachFrame.nOverride)
-          : Math.min(MAX_FRAMES, Math.max(2, Math.round(outLen * fps)));          // v63: без nOverride кадры считаем по ВЫХОДНОЙ длине
-    /* v63f: Optical Flow — блок-матчинг движения («палец»): промежуточный кадр дорисовывается
-       по векторам сдвига секторов; при смене плана — обычный кроссфейд (без задержек). */
-    var flow = !!(spd && spd.method === 'flow' && (spd.curve || (spdPct > 0 && spdPct < 100)) && (typeof srcFps !== 'undefined' && srcFps > 1));
+          : Math.min(maxFrames63, Math.max(2, Math.round(outLen * fps)));
+    try{ if(window.__flowDbg63) window.__flowDbg63.srcFpsSafe = srcFpsSafe; }catch(e){}
+
     try { window.__flowDbg63 = { want: flow, spd: spd ? { curve: !!spd.curve, pct: spd.pct, method: spd.method } : null, srcFps: (typeof srcFps !== 'undefined') ? srcFps : -1, frames: 0, morphed: 0, cut: 0, plain: 0 }; } catch (eFD) {}
     var cA = null, cB = null, ctxA = null, ctxB = null, cWA = null, cWB = null;
+    var lastFA63 = -1; // кэш пары кадров для flow — убирает рывки от повторных seek
     if (flow) {
       cA = document.createElement('canvas'); cB = document.createElement('canvas');
       cWA = document.createElement('canvas'); cWB = document.createElement('canvas');
@@ -6082,10 +6352,10 @@ var btnMov = $('btnMov');
       if (!flow) {
         job = drawOne(ctx, tIn, tOut);
       } else {
-        var sf = srcFps, ft = tIn * sf, fA = Math.floor(ft), fr = ft - fA, fMax = Math.max(1, Math.floor(clipLen * sf) - 1);
+        var sf = (typeof srcFpsSafe !== 'undefined' ? srcFpsSafe : srcFps), ft = tIn * sf, fA = Math.floor(ft), fr = ft - fA, fMax = Math.max(1, Math.floor(clipLen * sf) - 1);
         var stepF = 0;   // v63f: на сколько кадров источника шагаем за один выходной; >1 = ускорение → flow ни к чему
         try { stepF = (spdTIn63(Math.min(tOut + 1 / fps, outLen)) - tIn) * sf; } catch (eSF) {}
-        if (fr < 0.02 || fA >= fMax || stepF > 1.02) {
+        if (fA >= fMax || stepF > 1.02) { // fix рывков: убрано fr<0.02 — раньше каждые 100 кадров 2 кадра были plain без flow, давало рывок
           try { if (window.__flowDbg63) { window.__flowDbg63.frames++; window.__flowDbg63.plain++;
             if (!window.__flowDbg63.samples) window.__flowDbg63.samples = [];
             if (window.__flowDbg63.samples.length < 8) window.__flowDbg63.samples.push({ i: idx, tIn: +tIn.toFixed(3), ft: +ft.toFixed(3), fr: +fr.toFixed(3), fA: fA, fMax: fMax, stepF: +stepF.toFixed(3) });
@@ -6093,17 +6363,33 @@ var btnMov = $('btnMov');
           job = drawOne(ctx, tIn, tOut);
         } else {
           try { if (window.__flowDbg63) { window.__flowDbg63.frames++; window.__flowDbg63.morPh = (window.__flowDbg63.morPh || 0); } } catch (eDB2) {}
-          job = drawOne(ctxA, (fA + 0.5) / sf, tOut).then(function () { return drawOne(ctxB, (fA + 1.5) / sf, tOut); }).then(function () {   // v63f: середины кадров — граница таймстемпа в движке иначе отдаёт предыдущий кадр
-            try {
-              var fld = ofField63(ctxA, ctxB, d.w, d.h, 'p' + fA);
-              ofMorph63(ctx, cA, cB, cWA, cWB, d.w, d.h, fr, fld);
-              try { if (window.__flowDbg63) { window.__flowDbg63.morPh = (window.__flowDbg63.morPh || 0) + 1; if (fld && fld.cut) window.__flowDbg63.cut++; } } catch (eDB3) {}
-            } catch (eMF) {   // любой сбой — мягкий кроссфейд, процесс не стопорим
-              ctx.globalAlpha = 1; ctx.drawImage(cA, 0, 0);
-              ctx.globalAlpha = fr; ctx.drawImage(cB, 0, 0);
-              ctx.globalAlpha = 1;
-            }
-          });
+          if(lastFA63 !== fA){
+            job = drawOne(ctxA, (fA + 0.5) / sf, tOut).then(function () { return drawOne(ctxB, (fA + 1.5) / sf, tOut); }).then(function () {
+              lastFA63 = fA;
+              try {
+                var fld = ofField63(ctxA, ctxB, d.w, d.h, 'p' + fA);
+                ofMorph63(ctx, cA, cB, cWA, cWB, d.w, d.h, fr, fld);
+                try { if (window.__flowDbg63) { window.__flowDbg63.morPh = (window.__flowDbg63.morPh || 0) + 1; if (fld && fld.cut) window.__flowDbg63.cut++; } } catch (eDB3) {}
+              } catch (eMF) {
+                ctx.globalAlpha = 1; ctx.drawImage(cA, 0, 0);
+                ctx.globalAlpha = fr; ctx.drawImage(cB, 0, 0);
+                ctx.globalAlpha = 1;
+              }
+            });
+          }else{
+            // тот же fA — используем кэшированные cA/cB, без seek, без рывков
+            job = Promise.resolve().then(function(){
+              try {
+                var fld = ofField63(ctxA, ctxB, d.w, d.h, 'p' + fA);
+                ofMorph63(ctx, cA, cB, cWA, cWB, d.w, d.h, fr, fld);
+                try { if (window.__flowDbg63) { window.__flowDbg63.morPh = (window.__flowDbg63.morPh || 0) + 1; if (fld && fld.cut) window.__flowDbg63.cut++; } } catch (eDB3) {}
+              } catch (eMF) {
+                ctx.globalAlpha = 1; ctx.drawImage(cA, 0, 0);
+                ctx.globalAlpha = fr; ctx.drawImage(cB, 0, 0);
+                ctx.globalAlpha = 1;
+              }
+            });
+          }
         }
       }
       return job.then(function () {
@@ -12301,5 +12587,5 @@ var I18N_RE = [["^(.+) сохранён ✔$", "$1 saved ✔"], ["^Кадры: (
 </script>
 <div id="toastWrap" aria-live="polite"></div>
 <button id="scrFloatBtn" type="button" title="Кнопка у края рамки записи: не попадает в запись (это элемент страницы, а не контент экрана)">⏺ Запись</button>
-<script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a2fc4f509d8a9a50',t:'MTc4NzUxMTA5OA=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+<script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a2fc4f509d8a9a50',t:'MTc4NzUxMTA5OA=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script><script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a302080d1ff6f58e',t:'MTc4NzU3MTA5NA=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
