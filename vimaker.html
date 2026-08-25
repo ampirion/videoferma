@@ -780,7 +780,7 @@ input[type=range]{accent-color:var(--accent)}
   box-shadow:0 6px 18px rgba(0,0,0,.55);
 }
 .fs-close-btn:hover{background:#d32f2f}
-/* ===== v4.59 ===== */
+/* ===== v4.60 ===== */
 .clipBlock .cname{ opacity:.5; }
 #tlInner.tool-tsf .tlTrackRow, #tlInner.tool-tsf .tlContent{ cursor:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='26' height='26' viewBox='0 0 26 26'><path d='M3 7h16m0 0-5-4.5m5 4.5-5 4.5' stroke='white' stroke-width='2.4' fill='none' stroke-linecap='round' stroke-linejoin='round'/><path d='M3 19h16m0 0-5-4.5m5 4.5-5 4.5' stroke='white' stroke-width='2.4' fill='none' stroke-linecap='round' stroke-linejoin='round'/></svg>") 13 13, pointer; }
 #tlInner.tool-tsb .tlTrackRow, #tlInner.tool-tsb .tlContent{ cursor:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='26' height='26' viewBox='0 0 26 26'><path d='M23 7H7m0 0 5-4.5M7 7l5 4.5' stroke='white' stroke-width='2.4' fill='none' stroke-linecap='round' stroke-linejoin='round'/><path d='M23 19H7m0 0 5-4.5M7 19l5 4.5' stroke='white' stroke-width='2.4' fill='none' stroke-linecap='round' stroke-linejoin='round'/></svg>") 13 13, pointer; }
@@ -854,7 +854,7 @@ input[type=range]{accent-color:var(--accent)}
 <body>
 
 <header id="topbar">
-  <div class="brand"><span class="logo">▶</span> Vimaker <span class="sub" id="brandSub">v4.59 — online видео редактор, аналог Adobe Premiere, DaVinci</span> <a class="author" href="https://t.me/psihoboom" target="_blank" rel="noopener" title="Телеграм автора">Автор: AMPIRION</a></div>
+  <div class="brand"><span class="logo">▶</span> Vimaker <span class="sub" id="brandSub">v4.60 — online видео редактор, аналог Adobe Premiere, DaVinci</span> <a class="author" href="https://t.me/psihoboom" target="_blank" rel="noopener" title="Телеграм автора">Автор: AMPIRION</a></div>
   <div class="sep"></div>
   <div class="sep"></div>
   <button id="btnExportMp4" class="tbtn primary" title="Экспорт видео: битрейт, разрешение, диапазон по меткам I/O">🎬 MP4</button>
@@ -1106,7 +1106,7 @@ input[type=range]{accent-color:var(--accent)}
     <button class="tbtn primary" id="btnOpenXml2" style="font-size:13.5px;padding:9px 18px">📄 Выбрать XML-файл…</button>
     <button class="tbtn" id="btnDemo" style="font-size:13.5px;padding:9px 18px;margin-left:8px">✨ Открыть демо-проект</button>
     <p id="emptyDrop" style="margin-top:18px; color:var(--dimmer); font-size:12px">Можно просто перетащить файл XML в окно браузера</p>
-    <p class="verline" id="appVer">Версия приложения: <b>v4.59</b></p>
+    <p class="verline" id="appVer">Версия приложения: <b>v4.60</b></p>
   </div>
 </div>
 
@@ -2902,6 +2902,19 @@ function trackRowsHeight(seq){
 function shiftClipKeyframes(clip, dt){
   if(!clip || !clip.motion || !Array.isArray(clip.motion.keyframes) || Math.abs(dt) < 1e-9) return;
   for(const k of clip.motion.keyframes){ if(k.t != null) k.t += dt; }
+}
+/* Независимая копия клипа: motion/keyframes не делятся по ссылке. */
+function dupClip(c, extra){
+  const n = Object.assign({}, c, extra || {});
+  if(c && c.motion) n.motion = structuredClone(c.motion);
+  return n;
+}
+/* Сдвиг клипа по линейке вместе с ключами (ключи живут во времени линейки). */
+function shiftClipPlacement(clip, dt){
+  if(!clip || Math.abs(dt) < 1e-12) return;
+  clip.start += dt;
+  clip.end += dt;
+  shiftClipKeyframes(clip, dt);
 }
 function keyAtPlayhead(clip, prop){
   if(!clip || !clip.motion || !Array.isArray(clip.motion.keyframes)) return null;
@@ -5426,8 +5439,9 @@ function blockFromSelection(){
     kind: g.kind,
     srcIdx: (g.srcTrack.kind === 'video' ? vOrder : aOrder).indexOf(g.srcTrack),
     clips: g.clips.map(c => {
-      const seg = {...c, uid: 'bf' + (++UID_COUNTER), ciId: '', links: [], linkedClips: [],
-        start: c.start - minStart, end: c.end - minStart, durSec: c.durSec, _origUid: c.uid};
+      const seg = dupClip(c, {uid: 'bf' + (++UID_COUNTER), ciId: '', links: [], linkedClips: [],
+        start: c.start - minStart, end: c.end - minStart, durSec: c.durSec, _origUid: c.uid});
+      shiftClipKeyframes(seg, seg.start - c.start);
       segMap.set(c.uid, seg);
       return seg;
     })
@@ -5460,23 +5474,24 @@ function blockFromRange(tIn, tOut, cut){
       if(c.end <= tIn + 1e-6 || c.start >= tOut - 1e-6){ keep.push(c); continue; }
       const sp = c.durSec > 0 ? ((c.srcOut - c.srcIn) / c.durSec) : 1;
       const s = Math.max(c.start, tIn), e = Math.min(c.end, tOut);
-      const seg = {...c, uid: 'bf' + (++UID_COUNTER), ciId: '', links: [], linkedClips: [],
+      const seg = dupClip(c, {uid: 'bf' + (++UID_COUNTER), ciId: '', links: [], linkedClips: [],
         start: s - tIn, end: e - tIn, durSec: e - s,
         srcIn: c.srcIn + (s - c.start) * sp,
         srcOut: c.srcIn + (e - c.start) * sp,
-        _origUid: c.uid};
+        _origUid: c.uid});
+      shiftClipKeyframes(seg, -tIn);
       segs.push(seg);
       segMap.set(c.uid, seg);
       origObj.set(c.uid, c);
       if(cut){
         // вырезаем середину: слева и справа остаются обрезки (пустота на месте куска)
         if(c.start < s - 1e-6){
-          keep.push({...c, uid: 'cl' + (++UID_COUNTER), ciId: '', linkedClips: [],
-            end: s, durSec: s - c.start, srcOut: c.srcIn + (s - c.start) * sp});
+          keep.push(dupClip(c, {uid: 'cl' + (++UID_COUNTER), ciId: '', linkedClips: [],
+            end: s, durSec: s - c.start, srcOut: c.srcIn + (s - c.start) * sp}));
         }
         if(c.end > e + 1e-6){
-          keep.push({...c, uid: 'cl' + (++UID_COUNTER), ciId: '', linkedClips: [],
-            start: e, durSec: c.end - e, srcIn: c.srcIn + (e - c.start) * sp});
+          keep.push(dupClip(c, {uid: 'cl' + (++UID_COUNTER), ciId: '', linkedClips: [],
+            start: e, durSec: c.end - e, srcIn: c.srcIn + (e - c.start) * sp}));
         }
       }
     }
@@ -5505,6 +5520,7 @@ function avCutRange(){
     return;
   }
   const before = snapshotEdit();
+  invalidatePreviewSegments(seq, m.in, m.out);
   const block = blockFromRange(m.in, m.out, true);
   if(!block){ restoreEdit(before); return; }
   state.pasteBlock = block;
@@ -5557,8 +5573,9 @@ function avPasteBlock(block, ripple, range){
       if(c.end <= rIn + 1e-6 || c.start >= rOut - 1e-6) continue;
       const s = Math.max(c.start, rIn) - rIn;
       const e = Math.min(c.end, rOut) - rIn;
-      const n = {...c, uid: 'cl' + (++UID_COUNTER), ciId: '', start: s, end: e, durSec: e - s,
-        linkedClips: [], _srcUid: c.uid};
+      const n = dupClip(c, {uid: 'cl' + (++UID_COUNTER), ciId: '', start: s, end: e, durSec: e - s,
+        linkedClips: [], _srcUid: c.uid});
+      shiftClipKeyframes(n, s - c.start);
       segMap.set(c.uid, n);
       clips.push(n);
     }
@@ -5577,7 +5594,7 @@ function avPasteBlock(block, ripple, range){
       if(tr.disabled || tr.locked) continue;
       for(const c of tr.clips){
         if(c.deleted) continue;
-        if(c.start >= t0 - 1e-6){ c.start += sub; c.end += sub; }
+        if(c.start >= t0 - 1e-6){ shiftClipPlacement(c, sub); }
       }
       tr.clips.sort((a,b) => a.start - b.start);
     }
@@ -5606,7 +5623,7 @@ function avPasteBlock(block, ripple, range){
       else { tr = pushScratchTrack(seq, g.kind); used.add(tr.uid); createdTracks.push(tr); }
     }
     for(const n of g.clips){
-      n.start += t0; n.end += t0;
+      shiftClipPlacement(n, t0);
       tr.clips.push(n);
     }
     tr.clips.sort((a,b) => a.start - b.start);
@@ -5791,7 +5808,7 @@ function pasteClips(ripple){
       if(tr.disabled || tr.locked) continue;
       for(const c of tr.clips){
         if(c.deleted) continue;
-        if(c.start >= t0 - 1e-6){ c.start += span; c.end += span; }
+        if(c.start >= t0 - 1e-6){ shiftClipPlacement(c, span); }
       }
       tr.clips.sort((a,b) => a.start - b.start);
     }
@@ -5799,10 +5816,9 @@ function pasteClips(ripple){
   const uidMap = new Map();
   const created = cb.list.map(entry => {
     const c = entry.clip;
-    const n = {...c, uid: 'cl' + (++UID_COUNTER),
+    const n = dupClip(c, {uid: 'cl' + (++UID_COUNTER),
       start: t0 + (c.start - minStart), end: t0 + (c.end - minStart),
-      ciId: '', links: (c.links || []).slice(), linkedClips: []};
-    if(c.motion) n.motion = structuredClone(c.motion);
+      ciId: '', links: (c.links || []).slice(), linkedClips: []});
     uidMap.set(c.uid, n);
     n._srcUid = c.uid;
     shiftClipKeyframes(n, n.start - c.start);
@@ -8696,12 +8712,14 @@ function rippleDeleteGap(){
   let tB = Math.round(b.t1 * seq.fps) / seq.fps;
   if(tB - tA <= 1e-6){ toast('Область слишком мала', 'warn'); return; }
   const before = snapshotEdit();
+  const oldDur = Math.max(seq.durSec || 0, tB);
+  invalidatePreviewSegments(seq, tA, oldDur);
   // полное схлопывание: сдвиг ровно на длину области — без исключений
   const delta = tB - tA;
   let moved = 0;
   for(const tr of allTracksOf(seq)) for(const c of tr.clips){
     if(c.deleted) continue;
-    if(c.start >= tB - 1e-6){ c.start -= delta; c.end -= delta; moved++; }
+    if(c.start >= tB - 1e-6){ shiftClipPlacement(c, -delta); moved++; }
   }
   let maxEnd = 0;
   for(const tr of allTracksOf(seq)) for(const c of tr.clips) if(!c.deleted) maxEnd = Math.max(maxEnd, c.end);
@@ -8730,11 +8748,11 @@ function cutRangeOnTrack(track, tIn, tOut){
     if(inside){ removed++; continue; }
     if(spansBoth){
       // клип накрывает диапазон — разрезаем на две части
-      const left = {...c, uid:'cl'+(++UID_COUNTER), end: tIn, durSec: tIn - c.start, srcOut: c.srcIn + (tIn - c.start) * speed};
+      const left = dupClip(c, {uid:'cl'+(++UID_COUNTER), end: tIn, durSec: tIn - c.start, srcOut: c.srcIn + (tIn - c.start) * speed});
       left.linkedClips = c.linkedClips.slice();
 
       delete left.manualUnlink; delete left.manualLink;
-      const right = {...c, uid:'cl'+(++UID_COUNTER), start: tOut, end: c.end, durSec: c.end - tOut, srcIn: c.srcIn + (tOut - c.start) * speed};
+      const right = dupClip(c, {uid:'cl'+(++UID_COUNTER), start: tOut, end: c.end, durSec: c.end - tOut, srcIn: c.srcIn + (tOut - c.start) * speed});
       right.linkedClips = c.linkedClips.slice();
 
       delete right.manualUnlink; delete right.manualLink;
@@ -8771,6 +8789,8 @@ function deleteBetweenMarks(ripple){
   tOut = Math.round(tOut * seq.fps) / seq.fps;
   if(tOut - tIn <= 1e-6){ toast('Диапазон меток слишком мал', 'warn'); return; }
   const before = snapshotEdit();
+  const oldDur = Math.max(seq.durSec || 0, tOut);
+  invalidatePreviewSegments(seq, tIn, ripple ? oldDur : tOut);
   let removed = 0;
   for(const tr of allTracksOf(seq)){
     const r = cutRangeOnTrack(tr, tIn, tOut);
@@ -8782,7 +8802,7 @@ function deleteBetweenMarks(ripple){
     const delta = tOut - tIn;
     for(const tr of allTracksOf(seq)) for(const c of tr.clips){
       if(c.deleted) continue;
-      if(c.start >= tOut - 1e-6){ c.start -= delta; c.end -= delta; moved++; }
+      if(c.start >= tOut - 1e-6){ shiftClipPlacement(c, -delta); moved++; }
     }
   }
   if(!removed && !moved){
@@ -8814,6 +8834,7 @@ function deleteSelected(){
   for(const g of group){
     const t = findTrackOfClip(curSeq(), g.clip);
     if(!t) continue;
+    invalidateClipPreviewCache(g.clip);
     const i = t.clips.indexOf(g.clip);
     if(i >= 0){ t.clips.splice(i, 1); n++; }
   }
@@ -8928,7 +8949,7 @@ function performBladeCut(victims, cutT){
     const {clip: c, track: tr} = v;
     const sp = c.durSec > 0 ? ((c.srcOut - c.srcIn) / c.durSec) : 1;
     const cutSrc = c.srcIn + (cutT - c.start) * sp;
-    const right = {...c, uid: 'cl' + (++UID_COUNTER), start: cutT, end: c.end, durSec: c.end - cutT, srcIn: cutSrc};
+    const right = dupClip(c, {uid: 'cl' + (++UID_COUNTER), start: cutT, end: c.end, durSec: c.end - cutT, srcIn: cutSrc});
     right.linkedClips = (c.linkedClips||[]).slice();
     c.end = cutT; c.durSec = cutT - c.start; c.srcOut = cutSrc;
     additions.push({right, track: tr});
@@ -8948,6 +8969,7 @@ function performBladeCut(victims, cutT){
       return pr || partner;
     });
   }
+  for(const v of victims) invalidateClipPreviewCache(v.clip);
   commitEdit('Разрез (' + victims.length + ' клип.)', before);
   recountClips(seq);
   setSelection([]);
@@ -8977,11 +8999,11 @@ function overwriteOnTrack(track, t, dur){
     if(inside){ continue; } // удаляется
     if(leftCut && rightCut){
       // фрагмент внутри клипа — клип режется на две части
-      const left = {...c, uid:'cl'+(++UID_COUNTER), end: t, durSec: t - c.start, srcOut: c.srcIn + (t - c.start) * speed};
+      const left = dupClip(c, {uid:'cl'+(++UID_COUNTER), end: t, durSec: t - c.start, srcOut: c.srcIn + (t - c.start) * speed});
       left.linkedClips = c.linkedClips.slice();
 
       delete left.manualUnlink; delete left.manualLink;
-      const right = {...c, uid:'cl'+(++UID_COUNTER), start: t + dur, end: c.end, durSec: c.end - (t + dur), srcIn: c.srcIn + (t + dur - c.start) * speed};
+      const right = dupClip(c, {uid:'cl'+(++UID_COUNTER), start: t + dur, end: c.end, durSec: c.end - (t + dur), srcIn: c.srcIn + (t + dur - c.start) * speed});
       right.linkedClips = c.linkedClips.slice();
 
       delete right.manualUnlink; delete right.manualLink;
@@ -8989,7 +9011,7 @@ function overwriteOnTrack(track, t, dur){
       continue;
     }
     if(leftCut){
-      const left = {...c, uid:'cl'+(++UID_COUNTER), end: t, durSec: t - c.start, srcOut: c.srcIn + (t - c.start) * speed};
+      const left = dupClip(c, {uid:'cl'+(++UID_COUNTER), end: t, durSec: t - c.start, srcOut: c.srcIn + (t - c.start) * speed});
       left.linkedClips = c.linkedClips.slice();
 
       delete left.manualUnlink; delete left.manualLink;
@@ -8997,7 +9019,7 @@ function overwriteOnTrack(track, t, dur){
       continue;
     }
     if(rightCut){
-      const right = {...c, uid:'cl'+(++UID_COUNTER), start: t + dur, end: c.end, durSec: c.end - (t + dur), srcIn: c.srcIn + (t + dur - c.start) * speed};
+      const right = dupClip(c, {uid:'cl'+(++UID_COUNTER), start: t + dur, end: c.end, durSec: c.end - (t + dur), srcIn: c.srcIn + (t + dur - c.start) * speed});
       right.linkedClips = c.linkedClips.slice();
 
       delete right.manualUnlink; delete right.manualLink;
@@ -9037,7 +9059,7 @@ function cutAllTracksAt(t, skipProtected, onlyTracks){
     const {clip: c, track: tr} = v;
     const sp = c.durSec > 0 ? ((c.srcOut - c.srcIn) / c.durSec) : 1;
     const cutSrc = c.srcIn + (t - c.start) * sp;
-    const right = {...c, uid: 'cl' + (++UID_COUNTER), start: t, end: c.end, durSec: c.end - t, srcIn: cutSrc};
+    const right = dupClip(c, {uid: 'cl' + (++UID_COUNTER), start: t, end: c.end, durSec: c.end - t, srcIn: cutSrc});
     right.linkedClips = (c.linkedClips || []).slice();
 
     delete right.manualUnlink; delete right.manualLink;
@@ -9147,7 +9169,7 @@ function insertClipOnTimeline(fileId, t, target, src, ripple, opts){
       if(tr.disabled || tr.locked) continue;
       for(const c of tr.clips){
         if(c.deleted) continue;
-        if(c.start >= t - 1e-6){ c.start += dur; c.end += dur; }
+        if(c.start >= t - 1e-6){ shiftClipPlacement(c, dur); }
       }
       tr.clips.sort((a,b) => a.start - b.start);
     }
@@ -10709,11 +10731,13 @@ function startManualCash(){
   if(!seq){ toast('Нет секвенции для кэша', 'warn'); return; }
   const end = activeEnd(seq) || seq.durSec;
   if(!(end > 0.04)){ toast('На таймлайне нет активной области для кэша', 'warn'); return; }
+  const from = Math.max(0, Math.min(state.t || 0, end));
+  if(end - from <= 0.04){ toast('Плейхед в конце — справа нечего кэшировать. Поставьте плейхед раньше.', 'warn'); return; }
   state.cacheAbort = false;
-  // Ручной CASH считаем пакетами по 0.5 секунды. Если часть уже есть — пропускаем.
+  // Ручной CASH считаем пакетами по 0.5 секунды, начиная с плейхеда.
   const step = 0.5;
   let added = 0;
-  for(let t = 0; t < end - 1e-6; t += step){
+  for(let t = from; t < end - 1e-6; t += step){
     const t0 = t, t1 = Math.min(end, t + step);
     if(findPreviewSegmentCovering(seq, t0, t1)) continue;
     enqueuePreviewRange(seq, t0, t1, seq.name + ' ' + fmtDur(t0) + '–' + fmtDur(t1), 'good', {noInvalidate:true});
@@ -11908,7 +11932,7 @@ function applyLang(){
   for(const pair of TR_TEXT){ const el = $(pair[0]); if(el) el.textContent = t(pair[1]); }
   for(const pair of TR_TITLE){ const el = $(pair[0]); if(el) el.title = t(pair[1]); }
   const ep = $('emptyP'); if(ep) ep.innerHTML = t('empty_p');
-  const av = $('appVer'); if(av) av.innerHTML = t('app_ver') + ' <b>v4.59</b>';
+  const av = $('appVer'); if(av) av.innerHTML = t('app_ver') + ' <b>v4.60</b>';
   for(const id of ['lblVideo','lblAudio']) { const el = $(id); if(el) el.textContent = t(id === 'lblVideo' ? 'lbl_video' : 'lbl_audio'); }
   for(const pr of [['expTitleTxt','exp_title'],['lblRes','lbl_res'],['lblBr','lbl_br'],['lblRange','lbl_range'],['lblCodec','lbl_codec'],
                    ['lblStop','lbl_stop'],['lblStartExp','lbl_start_exp'],['lblCancel','lbl_cancel'],
@@ -11920,7 +11944,7 @@ function applyLang(){
     const el = $(pr[0]); if(el) el.innerHTML = t(pr[1]); // ссылки сохраняются в переводах
   }
   const nsPh = $('nsName'); if(nsPh) nsPh.placeholder = t('ns_ph');
-  const bs = $('brandSub'); if(bs) bs.textContent = 'v4.59 — ' + t('brand_sub');
+  const bs = $('brandSub'); if(bs) bs.textContent = 'v4.60 — ' + t('brand_sub');
   const lw = $('lbWheelHint'); if(lw) lw.textContent = t('wheel_hint');
   const rh = $('restHint'); if(rh) rh.textContent = t('rest_phrase');
   updateStatus();
