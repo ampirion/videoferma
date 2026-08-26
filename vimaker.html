@@ -45,6 +45,12 @@ input[type=range]{accent-color:var(--accent)}
   padding:2px 8px; border-radius:5px; background:var(--accent-soft);
 }
 .brand .author:hover{filter:brightness(1.2); text-decoration:underline}
+.brand .farm{
+  color:#e8e8ee; font-size:11.5px; font-weight:700; text-decoration:none;
+  padding:2px 8px; border-radius:5px; background:#2a3144; border:1px solid #3d4a66;
+  margin-left:4px;
+}
+.brand .farm:hover{filter:brightness(1.15); text-decoration:underline}
 .edge-hint{
   color:#ff9f43; font-size:11px; font-weight:600; white-space:nowrap;
   padding:3px 8px; border:1px solid rgba(255,159,67,.45); border-radius:20px;
@@ -733,7 +739,7 @@ input[type=range]{accent-color:var(--accent)}
 }
 .clipBlock .clipSettings:hover{background:var(--accent); color:#fff}
 #motionPop{
-  position:fixed; z-index:145; display:none; width:min(1000px, 92vw);
+  position:fixed; z-index:145; display:none; width:max-content; max-width:min(560px, 96vw);
   background:rgba(26,26,33,.98); border:1px solid var(--border2); border-radius:10px;
   padding:10px 12px; box-shadow:0 12px 30px rgba(0,0,0,.65); font-size:12px;
 }
@@ -742,19 +748,71 @@ input[type=range]{accent-color:var(--accent)}
 #motionPop .mp-x:hover{background:var(--panel3); color:#fff}
 #motionPop .mp-row{display:flex; align-items:center; gap:8px; margin:7px 0}
 #motionPop .mp-row label{width:92px; color:var(--dim)}
-#motionPop input[type=range]{flex:1}
+#motionPop input[type=range], #audioPop input[type=range]{flex:1 1 360px; width:360px; max-width:360px; min-width:280px}
 #motionPop .mp-val{width:70px; text-align:right; font-family:"SF Mono",Consolas,Menlo,monospace; color:var(--accent)}
 #motionPop .mp-num{width:74px; background:var(--panel2); color:var(--text); border:1px solid var(--border2); border-radius:6px; padding:4px 6px; font:inherit}
 #motionPop .mp-nav{display:flex; gap:8px; margin:8px 0}
-#motionPop .mp-note{color:var(--dim); font-size:11px; line-height:1.45; margin-top:6px}
+#motionPop .mp-note, #audioPop .mp-note{color:var(--dim); font-size:11px; line-height:1.45; margin-top:6px}
+#audioPop{
+  display:none; position:fixed; z-index:145; width:max-content; max-width:min(560px, 96vw);
+  background:rgba(26,26,33,.98); border:1px solid var(--border2); border-radius:10px; padding:12px 14px 10px;
+  box-shadow:0 12px 40px rgba(0,0,0,.45); font-size:12px;
+}
+#audioPop .mp-title{font-weight:700; margin-bottom:8px; max-width:calc(100% - 42px); overflow:hidden; text-overflow:ellipsis; white-space:nowrap}
+#audioPop .mp-x{position:absolute; top:6px; right:8px; padding:2px 7px; border-radius:5px; color:var(--dim)}
+#audioPop .mp-x:hover{background:var(--panel3); color:#fff}
+#audioPop .mp-row{display:flex; align-items:center; gap:8px; margin:7px 0}
+#audioPop .mp-row label{width:118px; color:var(--dim)}
+#audioPop .mp-val{width:70px; text-align:right; font-family:"SF Mono",Consolas,Menlo,monospace; color:var(--accent)}
+#audioPop .mp-num{width:74px; background:var(--panel2); color:var(--text); border:1px solid var(--border2); border-radius:6px; padding:4px 6px; font:inherit}
+#audioPop .mp-nav{display:flex; gap:8px; margin:8px 0; flex-wrap:wrap}
+#audioPop .mp-curve{width:180px;height:44px;border:1px solid var(--border2);border-radius:6px;background:#101015}
 #motionPop .mp-curve{width:180px;height:44px;border:1px solid var(--border2);border-radius:6px;background:#101015;box-shadow:inset 0 0 0 1px rgba(255,255,255,.03)}
 #motionPop .mp-curve.off{opacity:.35}
 
 .clipBlock .kfDot{position:absolute; bottom:8px; width:10px; height:10px; margin-left:-5px; border-radius:50%; z-index:12; cursor:ew-resize; border:1.5px solid #fff; box-shadow:0 0 5px rgba(0,0,0,.85)}
 .clipBlock .kfDot.scale{background:#2fbfde; bottom:8px}
 .clipBlock .kfDot.opacity{background:#f76fa4; bottom:21px}
+.clipBlock .kfDot.gainDb{background:#7dcf6b; bottom:8px}
+.clipBlock .kfDot.pan{background:#e6c15a; bottom:21px}
 .clipBlock .kfDot:hover{transform:scale(1.35)}
 .clipBlock .kfDot.armed{outline:2px solid #fff; box-shadow:0 0 0 2px currentColor, 0 0 12px 4px currentColor; transform:scale(1.35)}
+#tourAnimLayer{position:fixed; inset:0; z-index:160; pointer-events:none; display:none}
+#tourMiniTl{
+  position:absolute; width:min(640px, 78vw); height:168px; border-radius:10px;
+  background:#1a1a20; border:1px solid #4a4a58; box-shadow:0 16px 40px rgba(0,0,0,.55);
+  overflow:hidden; z-index:1;
+}
+#tourMiniTl .tm-ruler{height:22px; background:#141418; border-bottom:1px solid #333; color:#888; font:10px/22px monospace; padding:0 8px}
+#tourMiniTl .tm-row{height:52px; position:relative; border-bottom:1px solid #2a2a32}
+#tourMiniTl .tm-row.v{background:#1e2430}
+#tourMiniTl .tm-row.a{background:#1c261e}
+#tourMiniTl .tm-lab{position:absolute; left:0; top:0; bottom:0; width:36px; background:#25252c; color:#aaa; font:11px/52px sans-serif; text-align:center; z-index:2}
+#tourMiniTl .vclip, #tourFakeClip, #tourFakeAudio{
+  position:absolute; height:40px; min-width:120px; border-radius:5px; top:6px; left:48px; transition:left .5s ease;
+  background:linear-gradient(90deg,#3a6ea5,#2a4d78); border:1px solid #8ec8ff;
+  box-shadow:0 4px 12px rgba(0,0,0,.4); color:#fff; font:12px/40px sans-serif;
+  padding:0 10px; overflow:hidden; white-space:nowrap; z-index:1;
+}
+#tourFakeClip .tf-gear{position:absolute; right:6px; top:50%; transform:translateY(-50%); background:rgba(0,0,0,.55); border-radius:50%; width:20px; height:20px; line-height:20px; text-align:center; font-size:12px}
+#tourFakeClip.trim .tf-frame{position:absolute; top:0; bottom:0; width:6px; background:#ffd54a; box-shadow:0 0 8px #ffd54a}
+#tourFakeClip.trim .tf-frame.l{left:0} #tourFakeClip.trim .tf-frame.r{right:0}
+#tourMouse{position:absolute; width:42px; height:42px; margin:-4px 0 0 -4px; filter:drop-shadow(0 3px 4px rgba(0,0,0,.6)); z-index:5; display:none; transition:left .45s ease, top .45s ease}
+#tourMouse .clk{position:absolute; left:2px; top:2px; width:18px; height:18px; border:2px solid #fff; border-radius:50%; opacity:0; pointer-events:none}
+#tourMouse.click1 .clk{animation:tourClk .35s ease-out}
+#tourMouse.click2 .clk{animation:tourClk .35s ease-out .18s}
+@keyframes tourClk{0%{transform:scale(.4);opacity:1}100%{transform:scale(2.2);opacity:0}}
+#tourDemoPop{
+  position:absolute; display:none; width:min(420px, 92vw); background:rgba(26,26,33,.98);
+  border:1px solid var(--border2); border-radius:10px; padding:10px 12px; color:var(--text); font-size:12px;
+  box-shadow:0 12px 30px rgba(0,0,0,.65);
+}
+#tourDemoPop .td-row{display:flex; align-items:center; gap:8px; margin:6px 0}
+#tourDemoPop .td-row label{width:110px; color:var(--dim)}
+#tourDemoPop input[type=range]{flex:1; min-width:120px}
+#tourDemoPop .td-hl{outline:2px solid #7dff9a; outline-offset:3px; border-radius:6px; background:rgba(125,255,154,.08)}
+#tourArrow{position:absolute; display:none; z-index:3; pointer-events:none}
+#tourArrow svg{overflow:visible}
 #exportPreview{display:none; width:180px; max-width:100%; aspect-ratio:16/9; background:#050506; border:1px solid var(--border2); border-radius:7px; margin:8px 0; object-fit:contain}
 #renderBox.show-preview #exportPreview{display:block}
 .em-check{display:flex; align-items:center; gap:8px; color:var(--text); font-size:12.5px}
@@ -780,7 +838,7 @@ input[type=range]{accent-color:var(--accent)}
   box-shadow:0 6px 18px rgba(0,0,0,.55);
 }
 .fs-close-btn:hover{background:#d32f2f}
-/* ===== v4.60 ===== */
+/* ===== v4.67 ===== */
 .clipBlock .cname{ opacity:.5; }
 #tlInner.tool-tsf .tlTrackRow, #tlInner.tool-tsf .tlContent{ cursor:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='26' height='26' viewBox='0 0 26 26'><path d='M3 7h16m0 0-5-4.5m5 4.5-5 4.5' stroke='white' stroke-width='2.4' fill='none' stroke-linecap='round' stroke-linejoin='round'/><path d='M3 19h16m0 0-5-4.5m5 4.5-5 4.5' stroke='white' stroke-width='2.4' fill='none' stroke-linecap='round' stroke-linejoin='round'/></svg>") 13 13, pointer; }
 #tlInner.tool-tsb .tlTrackRow, #tlInner.tool-tsb .tlContent{ cursor:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='26' height='26' viewBox='0 0 26 26'><path d='M23 7H7m0 0 5-4.5M7 7l5 4.5' stroke='white' stroke-width='2.4' fill='none' stroke-linecap='round' stroke-linejoin='round'/><path d='M23 19H7m0 0 5-4.5M7 19l5 4.5' stroke='white' stroke-width='2.4' fill='none' stroke-linecap='round' stroke-linejoin='round'/></svg>") 13 13, pointer; }
@@ -854,7 +912,7 @@ input[type=range]{accent-color:var(--accent)}
 <body>
 
 <header id="topbar">
-  <div class="brand"><span class="logo">▶</span> Vimaker <span class="sub" id="brandSub">v4.60 — online видео редактор, аналог Adobe Premiere, DaVinci</span> <a class="author" href="https://t.me/psihoboom" target="_blank" rel="noopener" title="Телеграм автора">Автор: AMPIRION</a></div>
+  <div class="brand"><span class="logo">▶</span> Vimaker <span class="sub" id="brandSub">v4.67 — online видео редактор, аналог Adobe Premiere, DaVinci</span> <a class="author" href="https://t.me/psihoboom" target="_blank" rel="noopener" title="Телеграм автора">Автор: AMPIRION</a> <a class="farm" id="brandFarm" href="https://ampirion.github.io/videoferma/" target="_blank" rel="noopener" title="Видеоферма">Видеоферма</a></div>
   <div class="sep"></div>
   <div class="sep"></div>
   <button id="btnExportMp4" class="tbtn primary" title="Экспорт видео: битрейт, разрешение, диапазон по меткам I/O">🎬 MP4</button>
@@ -978,9 +1036,14 @@ input[type=range]{accent-color:var(--accent)}
           <div id="acTracks"></div>
         </div>
         <div class="ac-row">
-          <span class="ac-lbl" id="acLblKey">Ключевая камера:</span>
+          <span class="ac-lbl" id="acLblKey">Стартовая камера:</span>
           <select id="acKey"></select>
-          <span class="ac-sub" id="acKeySub">ключевая начинает каждый блок и берёт максимум длины</span>
+          <span class="ac-sub" id="acKeySub">начало блока — всегда она (макс. длина); в середине — наравне с другими, короче в 3 раза</span>
+        </div>
+        <div class="ac-row">
+          <span class="ac-lbl" id="acLblBase">Базовая камера:</span>
+          <select id="acBase"></select>
+          <span class="ac-sub" id="acBaseSub">берёт максимальную длину фрагмента и появляется чаще других камер</span>
         </div>
         <div class="ac-row">
           <span class="ac-lbl" id="acLblLen">Длина:</span>
@@ -1106,7 +1169,7 @@ input[type=range]{accent-color:var(--accent)}
     <button class="tbtn primary" id="btnOpenXml2" style="font-size:13.5px;padding:9px 18px">📄 Выбрать XML-файл…</button>
     <button class="tbtn" id="btnDemo" style="font-size:13.5px;padding:9px 18px;margin-left:8px">✨ Открыть демо-проект</button>
     <p id="emptyDrop" style="margin-top:18px; color:var(--dimmer); font-size:12px">Можно просто перетащить файл XML в окно браузера</p>
-    <p class="verline" id="appVer">Версия приложения: <b>v4.60</b></p>
+    <p class="verline" id="appVer">Версия приложения: <b>v4.67</b></p>
   </div>
 </div>
 
@@ -1125,13 +1188,24 @@ input[type=range]{accent-color:var(--accent)}
 <div id="motionPop">
   <div class="mp-title" id="mpTitle">⚙️ Настройки клипа</div>
   <button id="mpClose" class="mp-x" title="Закрыть">✕</button>
-  <div class="mp-row"><label>Масштаб</label><input type="range" id="mpScale" min="0" max="1000" step="1" value="100"><input class="mp-num" type="number" id="mpScaleNum" min="0" max="1000" step="1" value="100"><span id="mpScaleVal" class="mp-val">100%</span></div>
-  <div style="display:flex;gap:18px;align-items:center;flex-wrap:wrap"><label class="em-check"><input type="checkbox" id="mpAnimScale"> Анимация масштаба</label><label class="em-check" title="Плавная S-кривая: медленно → быстро → медленно"><input type="checkbox" id="mpLogScale"> LOG</label><canvas id="mpScaleCurve" class="mp-curve" width="180" height="44" title="Кривая изменения масштаба"></canvas></div>
-  <div class="mp-row"><label>Альфа</label><input type="range" id="mpOpacity" min="0" max="100" step="1" value="100"><input class="mp-num" type="number" id="mpOpacityNum" min="0" max="100" step="1" value="100"><span id="mpOpacityVal" class="mp-val">100%</span></div>
-  <div style="display:flex;gap:18px;align-items:center;flex-wrap:wrap"><label class="em-check"><input type="checkbox" id="mpAnimOpacity"> Анимация альфы</label><label class="em-check" title="Плавная S-кривая: медленно → быстро → медленно"><input type="checkbox" id="mpLogOpacity"> LOG</label><canvas id="mpOpacityCurve" class="mp-curve" width="180" height="44" title="Кривая изменения альфы"></canvas></div>
-  <div class="mp-nav"><button id="mpPrevKey" class="tbtn sm">← к ключу</button><button id="mpNextKey" class="tbtn sm">к ключу →</button><button id="mpDelKey" class="tbtn sm" style="display:none">🗑 удалить ключ</button></div>
+  <div class="mp-row"><label id="mpLblScale">Масштаб</label><input type="range" id="mpScale" min="0" max="1000" step="1" value="100"><input class="mp-num" type="number" id="mpScaleNum" min="0" max="1000" step="1" value="100"><span id="mpScaleVal" class="mp-val">100%</span><button id="mpAddScaleKey" class="tbtn sm" title="Ключ только масштаба">+ ключ</button></div>
+  <div style="display:flex;gap:18px;align-items:center;flex-wrap:wrap"><label class="em-check"><input type="checkbox" id="mpAnimScale"> <span id="mpAnimScaleLbl">Анимация масштаба</span></label><label class="em-check" title="LOG"><input type="checkbox" id="mpLogScale"> LOG</label><canvas id="mpScaleCurve" class="mp-curve" width="180" height="44" title="Кривая изменения масштаба"></canvas></div>
+  <div class="mp-row"><label id="mpLblOpacity">Альфа</label><input type="range" id="mpOpacity" min="0" max="100" step="1" value="100"><input class="mp-num" type="number" id="mpOpacityNum" min="0" max="100" step="1" value="100"><span id="mpOpacityVal" class="mp-val">100%</span><button id="mpAddOpacityKey" class="tbtn sm" title="Ключ только альфы">+ ключ</button></div>
+  <div style="display:flex;gap:18px;align-items:center;flex-wrap:wrap"><label class="em-check"><input type="checkbox" id="mpAnimOpacity"> <span id="mpAnimOpacityLbl">Анимация альфы</span></label><label class="em-check" title="LOG"><input type="checkbox" id="mpLogOpacity"> LOG</label><canvas id="mpOpacityCurve" class="mp-curve" width="180" height="44" title="Кривая изменения альфы"></canvas></div>
+  <div class="mp-nav"><button id="mpPrevKey" class="tbtn sm">← к ключу</button><button id="mpNextKey" class="tbtn sm">к ключу →</button><button id="mpDelKey" class="tbtn sm" style="display:none">🗑 удалить ключ</button><button id="mpClearAll" class="tbtn sm">🗑 удалить все анимации</button></div>
   <div class="mp-note">Ключи видны кружочками: голубой — масштаб, розовый — альфа. Чтобы случайно не сдвинуть ключ, сначала дважды кликните по кружку — он разблокируется, затем перетаскивайте. Если плейхед стоит на ключе, в меню появляется корзинка. LOG включает плавную S-кривую между ключами: медленный старт, быстрый разгон, мягкое торможение.</div>
 </div>
+<div id="audioPop">
+  <div class="mp-title" id="apTitle">🔊 Автоматизация звука</div>
+  <button id="apClose" class="mp-x" title="Закрыть">✕</button>
+  <div class="mp-row"><label id="apLblGain">Громкость, dB</label><input type="range" id="apGain" min="-100" max="100" step="0.1" value="0"><input class="mp-num" type="number" id="apGainNum" min="-100" max="100" step="0.1" value="0"><span id="apGainVal" class="mp-val">0 dB</span><button id="apAddGainKey" class="tbtn sm" title="Ключ только громкости">+ ключ</button></div>
+  <div style="display:flex;gap:18px;align-items:center;flex-wrap:wrap"><label class="em-check"><input type="checkbox" id="apAnimGain"> <span id="apAnimGainLbl">Автоматизация звука</span></label><label class="em-check" title="Плавная S-кривая"><input type="checkbox" id="apLogGain"> LOG</label><canvas id="apGainCurve" class="mp-curve" width="180" height="44"></canvas></div>
+  <div class="mp-row"><label id="apLblPan">Баланс стерео</label><input type="range" id="apPan" min="-100" max="100" step="1" value="0"><input class="mp-num" type="number" id="apPanNum" min="-100" max="100" step="1" value="0"><span id="apPanVal" class="mp-val">0</span><button id="apAddPanKey" class="tbtn sm" title="Ключ только баланса">+ ключ</button></div>
+  <div style="display:flex;gap:18px;align-items:center;flex-wrap:wrap"><label class="em-check"><input type="checkbox" id="apAnimPan"> <span id="apAnimPanLbl">Автоматизация баланса</span></label><label class="em-check" title="Плавная S-кривая"><input type="checkbox" id="apLogPan"> LOG</label><canvas id="apPanCurve" class="mp-curve" width="180" height="44"></canvas></div>
+  <div class="mp-nav"><button id="apPrevKey" class="tbtn sm">← к ключу</button><button id="apNextKey" class="tbtn sm">к ключу →</button><button id="apDelKey" class="tbtn sm" style="display:none">🗑 удалить ключ</button><button id="apClearAll" class="tbtn sm">🗑 удалить все анимации</button></div>
+  <div class="mp-note">0 dB — без изменения. Влево тише (до −100 dB), вправо громче (до +100 dB). Баланс: −100 левый канал, +100 правый. Ключи: зелёный — громкость, жёлтый — баланс. Двойной клик по кружку — разблокировать перетаскивание. Ползунок громкости клипа (%) на динамике работает отдельно и умножается на автоматизацию.</div>
+</div>
+<div id="tourAnimLayer" aria-hidden="true"></div>
 <div id="authorDlg">
   <div class="export-modal author-modal">
     <div class="em-title" id="auTitle">Об авторе <button id="btnCloseAuthor" class="em-x" title="Закрыть">✕</button></div>
@@ -2161,7 +2235,7 @@ const state = {
   trimDrag: null,     // активное перетаскивание ручки обрезки
   autoCut: {          // автомонтаж — автонарезка камер
     open: false, running: false, stop: false,
-    min: 5, max: 10, selected: new Set(), keyUid: null,
+    min: 5, max: 10, selected: new Set(), keyUid: null, baseUid: null,
     outTrack: null, outPos: 0, lastCam: null, count: 0,
     tracks: null, srcSnap: null, before: null,
     notes: [],         // заметки о нестандартных фрагментах (не исчезают сами)
@@ -2900,13 +2974,19 @@ function trackRowsHeight(seq){
 
 
 function shiftClipKeyframes(clip, dt){
-  if(!clip || !clip.motion || !Array.isArray(clip.motion.keyframes) || Math.abs(dt) < 1e-9) return;
-  for(const k of clip.motion.keyframes){ if(k.t != null) k.t += dt; }
+  if(!clip || Math.abs(dt) < 1e-9) return;
+  if(clip.motion && Array.isArray(clip.motion.keyframes)){
+    for(const k of clip.motion.keyframes){ if(k.t != null) k.t += dt; }
+  }
+  if(clip.audioAuto && Array.isArray(clip.audioAuto.keyframes)){
+    for(const k of clip.audioAuto.keyframes){ if(k.t != null) k.t += dt; }
+  }
 }
 /* Независимая копия клипа: motion/keyframes не делятся по ссылке. */
 function dupClip(c, extra){
   const n = Object.assign({}, c, extra || {});
   if(c && c.motion) n.motion = structuredClone(c.motion);
+  if(c && c.audioAuto) n.audioAuto = structuredClone(c.audioAuto);
   return n;
 }
 /* Сдвиг клипа по линейке вместе с ключами (ключи живут во времени линейки). */
@@ -2944,18 +3024,21 @@ function deleteMotionKeysAtPlayhead(){
   } else toast('На плейхеде нет ключевого кадра', 'warn');
 }
 function renderClipKeyframes(div, clip, track){
-  if(!track || track.kind !== 'video') return; // scale/alpha — только видео-слой, звук невидим
-  if(!clip || !clip.motion || !Array.isArray(clip.motion.keyframes) || !clip.motion.keyframes.length) return;
+  if(!clip) return;
   const seq = curSeq();
   if(!seq) return;
-  const props = ['scale','opacity'];
-  for(const k of clip.motion.keyframes){
+  const isAud = track && track.kind === 'audio';
+  const bag = isAud ? clip.audioAuto : clip.motion;
+  if(!bag || !Array.isArray(bag.keyframes) || !bag.keyframes.length) return;
+  const props = isAud ? ['gainDb','pan'] : ['scale','opacity'];
+  const names = {scale:'Ключ масштаба', opacity:'Ключ альфы', gainDb:'Ключ громкости', pan:'Ключ баланса'};
+  for(const k of bag.keyframes){
     if(k.t == null || k.t < clip.start - 1e-6 || k.t > clip.end + 1e-6) continue;
     for(const prop of props){
       if(k[prop] == null) continue;
       const d = document.createElement('div');
       d.className = 'kfDot ' + prop;
-      d.title = (prop === 'scale' ? 'Ключ масштаба' : 'Ключ альфы') + ' · ' + fmtFrames(Math.round(k.t * seq.fps) + seq.tcStartFrames, seq.fps) + ' · двойной клик — включить/выключить перемещение';
+      d.title = (names[prop] || 'Ключ') + ' · ' + fmtFrames(Math.round(k.t * seq.fps) + seq.tcStartFrames, seq.fps) + ' · двойной клик — включить/выключить перемещение';
       d.style.left = ((k.t - clip.start) / Math.max(clip.durSec, 1e-9) * 100) + '%';
       if(state.armedKey && state.armedKey.clipUid === clip.uid && state.armedKey.prop === prop && Math.abs(state.armedKey.t - k.t) < 1e-6) d.classList.add('armed');
       d.addEventListener('dblclick', ev => {
@@ -2963,14 +3046,14 @@ function renderClipKeyframes(div, clip, track){
         const same = state.armedKey && state.armedKey.clipUid === clip.uid && state.armedKey.prop === prop && Math.abs(state.armedKey.t - k.t) < 1e-6;
         if(same){
           state.armedKey = null;
-          buildTimeline(); updateMonitor(); updateMotionPopValues();
+          buildTimeline(); updateMonitor(); updateMotionPopValues(); updateAudioPopValues();
           toast('Перемещение ключа выключено', '');
           return;
         }
         state.armedKey = {clipUid: clip.uid, prop, t: k.t};
         seekTo(k.t);
-        buildTimeline(); updateMonitor(); updateMotionPopValues();
-        toast((prop === 'scale' ? 'Ключ масштаба' : 'Ключ альфы') + ' разблокирован: теперь его можно двигать влево/вправо', '');
+        buildTimeline(); updateMonitor(); updateMotionPopValues(); updateAudioPopValues();
+        toast((names[prop] || 'Ключ') + ' разблокирован: теперь его можно двигать влево/вправо', '');
       });
       d.addEventListener('pointerdown', ev => {
         ev.preventDefault(); ev.stopPropagation();
@@ -2984,13 +3067,13 @@ function renderClipKeyframes(div, clip, track){
         // при перемещении одного свойства отделяем его в отдельный keyframe,
         // а второй ключ остаётся на старом месте.
         let moveKey = k;
-        const otherProp = prop === 'scale' ? 'opacity' : 'scale';
+        const otherProp = prop === 'scale' ? 'opacity' : prop === 'opacity' ? 'scale' : (prop === 'gainDb' ? 'pan' : 'gainDb');
         if(k[otherProp] != null){
           moveKey = {t: k.t};
           moveKey[prop] = k[prop];
           delete k[prop];
-          clip.motion.keyframes.push(moveKey);
-          clip.motion.keyframes.sort((a,b) => a.t - b.t);
+          bag.keyframes.push(moveKey);
+          bag.keyframes.sort((a,b) => a.t - b.t);
         }
         const move = e => {
           const nt = clamp(origT + (e.clientX - startX) / state.ppx, clip.start, clip.end);
@@ -2998,9 +3081,9 @@ function renderClipKeyframes(div, clip, track){
           state.armedKey.t = moveKey.t;
           d.style.left = ((moveKey.t - clip.start) / Math.max(clip.durSec, 1e-9) * 100) + '%';
           seekTo(moveKey.t);
-          updateMonitor(); updateMotionPopValues();
+          updateMonitor(); updateMotionPopValues(); updateAudioPopValues();
         };
-        const up = () => { window.removeEventListener('pointermove', move); state.armedKey = null; invalidateClipPreviewCache(clip); buildTimeline(); updateMonitor(); updateMotionPopValues(); enqueueClipPreviewCache(clip); toast('Перемещение ключа выключено', ''); };
+        const up = () => { window.removeEventListener('pointermove', move); state.armedKey = null; invalidateClipPreviewCache(clip); buildTimeline(); updateMonitor(); updateMotionPopValues(); updateAudioPopValues(); enqueueClipPreviewCache(clip); toast('Перемещение ключа выключено', ''); };
         window.addEventListener('pointermove', move);
         window.addEventListener('pointerup', up, {once:true});
       });
@@ -3200,7 +3283,7 @@ function applyClipGain(v){
   redrawClipWave(tg.clip);
   // живое обновление воспроизведения
   for(const e of (state.audioClips||[])){
-    if(e.c && e.c.uid === tg.clip.uid) setPlayVolume(e, (state.muted ? 0 : 1) * (tg.clip.gain || 0));
+    if(e.c && e.c.uid === tg.clip.uid) setPlayVolume(e, (state.muted ? 0 : 1) * clipLiveAudioGain(tg.clip, state.t), clipLivePan(tg.clip, state.t));
   }
   // обновить подпись на блоке и иконку
   const el = document.querySelector('.clipBlock[data-clip-uid="' + tg.clip.uid + '"]');
@@ -3512,6 +3595,83 @@ function setMotionKey(clip, prop, value, t){
   if(!k){ k = {t}; m.keyframes.push(k); m.keyframes.sort((a,b) => a.t - b.t); }
   k[prop] = value;
   m[prop] = value;
+}
+function clearAllMotionAnims(){
+  const mt = state.motionTarget;
+  const clip = mt && mt.clip;
+  if(!clip) return;
+  const m = ensureMotion(clip);
+  m.keyframes = [];
+  m.animScale = false; m.animOpacity = false;
+  invalidateClipPreviewCache(clip);
+  buildTimeline(); updateMonitor(); updateMotionPopValues(); enqueueClipPreviewCache(clip);
+  toast(t('mp_cleared') || 'Все анимации клипа сняты', '');
+}
+function clearAllAudioAnims(){
+  const at = state.audioTarget;
+  const clip = at && at.clip;
+  if(!clip) return;
+  const m = ensureAudioAuto(clip);
+  m.keyframes = [];
+  m.animGain = false; m.animPan = false;
+  buildTimeline(); updateAudioPopValues(); refreshPlayingAudioParams();
+  toast(t('ap_cleared') || 'Вся автоматизация звука снята', '');
+}
+function addMotionKeyAtPlayhead(prop){
+  const mt = state.motionTarget;
+  const clip = mt && mt.clip;
+  if(!clip || (prop !== 'scale' && prop !== 'opacity')) return;
+  const m = ensureMotion(clip);
+  if(prop === 'scale') m.animScale = true; else m.animOpacity = true;
+  setMotionKey(clip, prop, clipMotionValue(clip, prop, state.t), state.t);
+  invalidateClipPreviewCache(clip);
+  buildTimeline(); updateMonitor(); updateMotionPopValues(); enqueueClipPreviewCache(clip);
+  toast((prop === 'scale' ? 'Ключ масштаба' : 'Ключ альфы') + ' на плейхед', '');
+}
+function dbToLin(db){
+  db = Number(db);
+  if(!isFinite(db)) return 1;
+  if(db <= -99.9) return 0;
+  return Math.pow(10, db / 20);
+}
+function ensureAudioAuto(clip){
+  if(!clip.audioAuto) clip.audioAuto = {gainDb: 0, pan: 0, keyframes: [], animGain: false, animPan: false, logGain: false, logPan: false};
+  if(clip.audioAuto.gainDb == null) clip.audioAuto.gainDb = 0;
+  if(clip.audioAuto.pan == null) clip.audioAuto.pan = 0;
+  if(!Array.isArray(clip.audioAuto.keyframes)) clip.audioAuto.keyframes = [];
+  return clip.audioAuto;
+}
+function clipAudioValue(clip, prop, t){
+  const base = clip.audioAuto && clip.audioAuto[prop] != null ? clip.audioAuto[prop] : 0;
+  const kfs = (clip.audioAuto && clip.audioAuto.keyframes ? clip.audioAuto.keyframes : [])
+    .filter(k => k[prop] != null).slice().sort((a,b) => a.t - b.t);
+  if(!kfs.length) return base;
+  if(t <= kfs[0].t) return kfs[0][prop];
+  const useLog = !!(clip.audioAuto && (prop === 'gainDb' ? clip.audioAuto.logGain : clip.audioAuto.logPan));
+  for(let i = 0; i < kfs.length - 1; i++){
+    const a = kfs[i], b = kfs[i+1];
+    if(t >= a.t && t <= b.t){
+      let u = (t - a.t) / Math.max(1e-9, b.t - a.t);
+      if(useLog) u = easeLogCurve(u);
+      return a[prop] + (b[prop] - a[prop]) * u;
+    }
+  }
+  return kfs[kfs.length - 1][prop];
+}
+function setAudioKey(clip, prop, value, t){
+  const m = ensureAudioAuto(clip);
+  const eps = 1e-4;
+  let k = m.keyframes.find(x => Math.abs(x.t - t) < eps);
+  if(!k){ k = {t}; m.keyframes.push(k); m.keyframes.sort((a,b) => a.t - b.t); }
+  k[prop] = value;
+  m[prop] = value;
+}
+function clipLiveAudioGain(clip, t){
+  const base = clip.gain != null ? clip.gain : 1;
+  return Math.max(0, base * dbToLin(clipAudioValue(clip, 'gainDb', t)));
+}
+function clipLivePan(clip, t){
+  return clamp(clipAudioValue(clip, 'pan', t) / 100, -1, 1);
 }
 function drawCoverTransformed(ctx, src, w, h, clip, t){
   const vw = src.videoWidth || src.naturalWidth || src.width || 0;
@@ -3878,9 +4038,23 @@ async function mixAudioRange(seq, tIn, tOut){
       src.buffer = buf;
       src.playbackRate.value = speed;
       const gn = oc.createGain();
-      gn.gain.value = (c.gain != null ? c.gain : 1);
+      const panN = oc.createStereoPanner ? oc.createStereoPanner() : null;
+      const t0 = clipStart - tIn;
+      const baseG = (c.gain != null ? c.gain : 1);
+      gn.gain.value = baseG * dbToLin(clipAudioValue(c, 'gainDb', clipStart));
+      if(c.audioAuto && c.audioAuto.keyframes && c.audioAuto.keyframes.length){
+        const keys = c.audioAuto.keyframes.slice().sort((a,b)=>a.t-b.t);
+        for(const k of keys){
+          if(k.t < clipStart - 1e-6 || k.t > clipEnd + 1e-6) continue;
+          const tt = Math.max(0, k.t - tIn);
+          if(k.gainDb != null) gn.gain.setValueAtTime(baseG * dbToLin(k.gainDb), tt);
+          if(panN && k.pan != null) panN.pan.setValueAtTime(clamp(k.pan/100, -1, 1), tt);
+        }
+      }
+      if(panN) panN.pan.value = clipLivePan(c, clipStart);
       src.connect(gn);
-      gn.connect(oc.destination);
+      if(panN){ gn.connect(panN); panN.connect(oc.destination); }
+      else gn.connect(oc.destination);
       src.start(clipStart - tIn, srcStart, srcDur);
       any = true;
     }catch(e){}
@@ -5008,12 +5182,12 @@ function clipBlockEl(clip, track, seq, srcDupMap){
   // жёлтые ручки обрезки
   if(state.trimUid === clip.uid && !clip.deleted){
     div.classList.add('trim-mode');
-    if(track.kind === 'video'){
+    if(track.kind === 'video' || track.kind === 'audio'){
       const stBtn = document.createElement('div');
       stBtn.className = 'clipSettings';
-      stBtn.title = 'Настройки: масштаб, альфа, ключевые кадры';
+      stBtn.title = track.kind === 'video' ? 'Настройки: масштаб, альфа, ключевые кадры' : 'Настройки: автоматизация звука, баланс';
       stBtn.textContent = '⚙';
-      stBtn.addEventListener('click', ev2 => { ev2.preventDefault(); ev2.stopPropagation(); openMotionPop(ev2, clip, track); });
+      stBtn.addEventListener('click', ev2 => { ev2.preventDefault(); ev2.stopPropagation(); if(track.kind === 'video') openMotionPop(ev2, clip, track); else openAudioPop(ev2, clip, track); });
       div.appendChild(stBtn);
     }
     const mk = (cls, side) => {
@@ -6214,7 +6388,7 @@ function updateMonitor(){
       el.onerror = () => { markMediaOffline(w.c.fileId, w.m.f ? w.m.f.name : ''); };
       const entry = {c: w.c, el, gn: null};
       arr.push(entry);
-      setPlayVolume(entry, (state.muted ? 0 : 1) * (w.c.gain != null ? w.c.gain : 1));
+      setPlayVolume(entry, (state.muted ? 0 : 1) * clipLiveAudioGain(w.c, state.t), clipLivePan(w.c, state.t));
       el.play().catch(()=>{}); // запускает загрузку; реальный старт — после metadata
     }
     // коррекция рассинхрона (перескок плейхеда, подхват после лага)
@@ -6436,9 +6610,12 @@ function openMotionPop(ev, clip, track){
   opn.onchange = () => apply('opacity', opn.value);
   $('mpPrevKey').onclick = () => goMotionKey(-1);
   $('mpNextKey').onclick = () => goMotionKey(1);
+  if($('mpAddScaleKey')) $('mpAddScaleKey').onclick = () => addMotionKeyAtPlayhead('scale');
+  if($('mpAddOpacityKey')) $('mpAddOpacityKey').onclick = () => addMotionKeyAtPlayhead('opacity');
+  if($('mpClearAll')) $('mpClearAll').onclick = clearAllMotionAnims;
   $('mpDelKey').onclick = deleteMotionKeysAtPlayhead;
   pop.style.display = 'block';
-  const w = Math.min(1000, window.innerWidth * .92), h = 230;
+  const w = Math.min(560, window.innerWidth * .96), h = 280;
   let x = ev.clientX + 12, y = ev.clientY + 12;
   if(x + w > window.innerWidth - 8) x = window.innerWidth - w - 8;
   if(y + h > window.innerHeight - 8) y = window.innerHeight - h - 8;
@@ -6447,30 +6624,145 @@ function openMotionPop(ev, clip, track){
 }
 function hideMotionPop(){ const p = $('motionPop'); if(p) p.style.display = 'none'; }
 $('mpClose').addEventListener('click', hideMotionPop);
+(function bindBlurRangeAfterUse(){
+  const blur = el => { try{ if(el && el.blur) el.blur(); }catch(err){} };
+  document.addEventListener('pointerup', e => {
+    const t = e.target;
+    if(!t || !t.matches) return;
+    if(t.matches('#motionPop input[type=range], #audioPop input[type=range], #gainPop input[type=range], input[type=range]')) blur(t);
+  }, true);
+})();
+
+function anyAudioKeyAtPlayhead(clip){
+  if(!clip || !clip.audioAuto || !Array.isArray(clip.audioAuto.keyframes)) return false;
+  const seq = curSeq();
+  const eps = seq ? 0.5 / seq.fps : 0.02;
+  return clip.audioAuto.keyframes.some(k => Math.abs(k.t - state.t) <= eps && (k.gainDb != null || k.pan != null));
+}
+function updateAudioPopValues(){
+  const at = state.audioTarget;
+  if(!at || !at.clip || !$('audioPop') || $('audioPop').style.display === 'none') return;
+  const clip = at.clip;
+  const gv = clipAudioValue(clip, 'gainDb', state.t);
+  const pv = clipAudioValue(clip, 'pan', state.t);
+  if($('apGain')){ $('apGain').value = $('apGainNum').value = Math.round(gv * 10) / 10; $('apGainVal').textContent = (Math.round(gv*10)/10) + ' dB'; }
+  if($('apPan')){ $('apPan').value = $('apPanNum').value = Math.round(pv); $('apPanVal').textContent = String(Math.round(pv)); }
+  const del = $('apDelKey');
+  if(del) del.style.display = anyAudioKeyAtPlayhead(clip) ? '' : 'none';
+  drawMotionCurve('apGainCurve', !!(clip.audioAuto && clip.audioAuto.logGain), '#7dcf6b');
+  drawMotionCurve('apPanCurve', !!(clip.audioAuto && clip.audioAuto.logPan), '#e6c15a');
+}
+function openAudioPop(ev, clip, track){
+  if(!track || track.kind !== 'audio'){ toast('Автоматизация звука — только на аудио-клипе', 'warn'); return; }
+  const pop = $('audioPop');
+  if(!pop) return;
+  const m = ensureAudioAuto(clip);
+  state.audioTarget = {clip, track};
+  $('apTitle').textContent = '🔊 ' + clip.name;
+  const animG = $('apAnimGain'), animP = $('apAnimPan'), logG = $('apLogGain'), logP = $('apLogPan');
+  if(animG){ animG.checked = !!m.animGain; animG.onchange = () => { m.animGain = animG.checked; }; }
+  if(animP){ animP.checked = !!m.animPan; animP.onchange = () => { m.animPan = animP.checked; }; }
+  if(logG){ logG.checked = !!m.logGain; logG.onchange = () => { m.logGain = logG.checked; updateAudioPopValues(); }; }
+  if(logP){ logP.checked = !!m.logPan; logP.onchange = () => { m.logPan = logP.checked; updateAudioPopValues(); }; }
+  updateAudioPopValues();
+  const apply = (prop, val) => {
+    val = prop === 'gainDb' ? clamp(Number(val)||0, -100, 100) : clamp(Number(val)||0, -100, 100);
+    if(prop === 'gainDb'){
+      if(animG && animG.checked){ m.animGain = true; setAudioKey(clip, prop, val, state.t); }
+      else m[prop] = val;
+    } else {
+      if(animP && animP.checked){ m.animPan = true; setAudioKey(clip, prop, val, state.t); }
+      else m[prop] = val;
+    }
+    updateAudioPopValues();
+    buildTimeline();
+    refreshPlayingAudioParams();
+  };
+  $('apGain').oninput = () => apply('gainDb', $('apGain').value);
+  $('apGainNum').onchange = () => apply('gainDb', $('apGainNum').value);
+  $('apPan').oninput = () => apply('pan', $('apPan').value);
+  $('apPanNum').onchange = () => apply('pan', $('apPanNum').value);
+  $('apPrevKey').onclick = () => goAudioKey(-1);
+  $('apNextKey').onclick = () => goAudioKey(1);
+  if($('apAddGainKey')) $('apAddGainKey').onclick = () => {
+    m.animGain = true;
+    setAudioKey(clip, 'gainDb', clipAudioValue(clip, 'gainDb', state.t), state.t);
+    buildTimeline(); updateAudioPopValues();
+    toast('Ключ громкости на плейхед', '');
+  };
+  if($('apClearAll')) $('apClearAll').onclick = clearAllAudioAnims;
+  if($('apAddPanKey')) $('apAddPanKey').onclick = () => {
+    m.animPan = true;
+    setAudioKey(clip, 'pan', clipAudioValue(clip, 'pan', state.t), state.t);
+    buildTimeline(); updateAudioPopValues();
+    toast('Ключ баланса на плейхед', '');
+  };
+  $('apDelKey').onclick = () => {
+    const eps = curSeq() ? 0.5 / curSeq().fps : 0.02;
+    let removed = 0;
+    for(let i = m.keyframes.length - 1; i >= 0; i--){
+      if(Math.abs(m.keyframes[i].t - state.t) <= eps){ m.keyframes.splice(i,1); removed++; }
+    }
+    if(removed){ buildTimeline(); updateAudioPopValues(); toast('Удалено ключей звука: ' + removed, ''); }
+  };
+  pop.style.display = 'block';
+  const w = Math.min(560, window.innerWidth * .96), h = 320;
+  let x = ev.clientX + 12, y = ev.clientY + 12;
+  if(x + w > window.innerWidth - 8) x = window.innerWidth - w - 8;
+  if(y + h > window.innerHeight - 8) y = window.innerHeight - h - 8;
+  pop.style.left = Math.max(8, x) + 'px';
+  pop.style.top = Math.max(8, y) + 'px';
+}
+function hideAudioPop(){ const p = $('audioPop'); if(p) p.style.display = 'none'; }
+function goAudioKey(dir){
+  const at = state.audioTarget;
+  const clip = at && at.clip;
+  if(!clip || !clip.audioAuto || !clip.audioAuto.keyframes.length){ toast('У клипа нет ключей звука', 'warn'); return; }
+  const arr = clip.audioAuto.keyframes.map(k => k.t).filter(t => t != null).sort((a,b)=>a-b);
+  let target = dir < 0 ? arr[0] : arr[arr.length - 1];
+  if(dir < 0){ for(let i = arr.length - 1; i >= 0; i--){ if(arr[i] < state.t - 1e-6){ target = arr[i]; break; } } }
+  else { for(const t of arr){ if(t > state.t + 1e-6){ target = t; break; } } }
+  seekTo(target); updateAudioPopValues(); updateMonitor();
+}
+if($('apClose')) $('apClose').addEventListener('click', hideAudioPop);
 
 /* Громкость воспроизведения клипа. До 100% — обычный el.volume, СВЫШЕ 100% —
    усиление через Web Audio GainNode (el.volume > 1 выбрасывает исключение и
    ломало запуск воспроизведения). Маршрутизация включается при первом
    превышении 100% и остаётся активной до конца жизни элемента. */
-function setPlayVolume(entry, g){
+function ensurePlayGraph(entry){
+  if(!entry || entry.gn) return;
+  try{
+    const ctx = getSharedAudioCtx();
+    if(ctx.state === 'suspended') ctx.resume().catch(()=>{});
+    const srcN = ctx.createMediaElementSource(entry.el);
+    const gn = ctx.createGain();
+    const panN = ctx.createStereoPanner ? ctx.createStereoPanner() : null;
+    srcN.connect(gn);
+    if(panN){ gn.connect(panN); panN.connect(ctx.destination); entry.panN = panN; }
+    else gn.connect(ctx.destination);
+    entry.gn = gn;
+    entry.el.volume = 1;
+  }catch(err){}
+}
+function setPlayVolume(entry, g, pan){
   if(!entry) return;
   g = Math.max(0, g);
-  if(entry.gn){ try{ entry.gn.gain.value = g; }catch(err){} return; }
-  if(g > 1){
-    try{
-      const ctx = getSharedAudioCtx();
-      if(ctx.state === 'suspended') ctx.resume().catch(()=>{});
-      const srcN = ctx.createMediaElementSource(entry.el);
-      const gn = ctx.createGain();
-      gn.gain.value = g;
-      srcN.connect(gn);
-      gn.connect(ctx.destination);
-      entry.gn = gn;
-      entry.el.volume = 1;
-      return;
-    }catch(err){ /* нет Web Audio — тихо ограничиваем 100% */ }
+  const needGraph = g > 1 || (pan != null && Math.abs(pan) > 1e-4) || (entry.c && entry.c.audioAuto);
+  if(needGraph) ensurePlayGraph(entry);
+  if(entry.gn){
+    try{ entry.gn.gain.value = g; }catch(err){}
+    if(entry.panN && pan != null){ try{ entry.panN.pan.value = clamp(pan, -1, 1); }catch(err){} }
+    return;
   }
   entry.el.volume = Math.min(1, g);
+}
+function refreshPlayingAudioParams(){
+  for(const e of (state.audioClips||[])){
+    if(!e.c) continue;
+    const g = (state.muted ? 0 : 1) * clipLiveAudioGain(e.c, state.t);
+    setPlayVolume(e, g, clipLivePan(e.c, state.t));
+  }
 }
 function stopAudioEl(e){
   try{ e.el.pause(); e.el.removeAttribute('src'); e.el.load(); }catch(err){}
@@ -6508,6 +6800,8 @@ function tick(now){
   updatePlayhead();
   updateMonitor();
   updateMotionPopValues();
+  updateAudioPopValues();
+  refreshPlayingAudioParams();
   // автоскролл
   const sc = $('tlScroll');
   const x = HEADER_W + state.t * state.ppx;
@@ -7292,6 +7586,12 @@ function isImageFile(f){
   if(type.startsWith('image/')) return true;
   return /\.(png|jpe?g|gif|webp|bmp|avif|svg|tiff?|heic|heif|ico)$/i.test((f && f.name) || '');
 }
+function isAudioFile(f){
+  const type = (f && f.type || '').toLowerCase();
+  if(type.startsWith('audio/')) return true;
+  if(type.startsWith('video/')) return false;
+  return /\.(mp3|wav|wave|aac|m4a|flac|ogg|opus|wma|aiff?|caf|aif)$/i.test((f && f.name) || '');
+}
 function attachMediaFiles(fileList, opts){
   opts = opts || {};
   const importOnly = !!opts.importOnly;
@@ -7377,7 +7677,8 @@ function attachMediaFiles(fileList, opts){
       // файл не из проекта — импортируем как новый ресурс в бины
       const fid = 'lcl-' + (++UID_COUNTER);
       const isImage = isImageFile(f);
-      const info = { id: fid, name: f.name, path: 'file:///' + f.name, fps: 25, durFrames: isImage ? 25 * 15 : 0, durSec: isImage ? 15 : 0, w: 0, h: 0, hasVideo: true, hasAudio: !isImage, local: true, isImage };
+      const isAudio = !isImage && isAudioFile(f);
+      const info = { id: fid, name: f.name, path: 'file:///' + f.name, fps: 25, durFrames: isImage ? 25 * 15 : 0, durSec: isImage ? 15 : 0, w: 0, h: 0, hasVideo: !isImage && !isAudio, hasAudio: !isImage || isAudio, local: true, isImage, isAudio };
       state.model.files[fid] = info;
       const med = {f, url: URL.createObjectURL(f), thumbs: null, thumbsPending: false, failed: false, waveform: null, wavePending: false, waveFailed: false};
       state.media.set(fid, med);
@@ -7948,8 +8249,30 @@ tlScroll.addEventListener('wheel', e => {
     if(!files.length) return;
     const added = attachMediaFiles(files, {importOnly:true});
     if(added.length && dt){
-      insertClipOnTimeline(added[0], dt.t, dt.target || null);
-      toast('Клип добавлен на таймлайн — ' + fmtFrames(Math.round(dt.t * curSeq().fps) + curSeq().tcStartFrames, curSeq().fps), '');
+      const fid = added[0];
+      const f0 = files[0];
+      const info = state.model.files[fid];
+      const place = () => {
+        insertClipOnTimeline(fid, dt.t, dt.target || null);
+        toast('Клип добавлен на таймлайн — ' + fmtFrames(Math.round(dt.t * curSeq().fps) + curSeq().tcStartFrames, curSeq().fps), '');
+      };
+      if(isAudioFile(f0)){
+        if(info){ info.hasVideo = false; info.hasAudio = true; }
+        place();
+      } else if(isImageFile(f0)){
+        place();
+      } else if(typeof probeFile === 'function'){
+        probeFile(f0).then(meta => {
+          if(meta && info){
+            info.hasVideo = meta.hasVideo;
+            info.hasAudio = meta.hasAudio;
+            if(meta.dur){ info.durSec = meta.dur; info.durFrames = Math.round(meta.dur * (info.fps || 25)); }
+            if(meta.w) info.w = meta.w;
+            if(meta.h) info.h = meta.h;
+          }
+          place();
+        }).catch(place);
+      } else place();
     } else if(!added.length && state.model){
       toast('Файлы не совпали с проектом', 'warn');
     }
@@ -8370,6 +8693,7 @@ function cloneClipForDrag(c){
   // Раньше объект motion копировался по ссылке, и shiftClipKeyframes() при ALT-дубликате
   // сдвигал ключи также у исходного клипа. Теперь дубликат получает независимую копию.
   if(c.motion) n.motion = structuredClone(c.motion);
+  if(c.audioAuto) n.audioAuto = structuredClone(c.audioAuto);
   return n;
 }
 function startClipDrag(ev, clip, track, group, cloneMode){
@@ -10046,9 +10370,10 @@ function closeAutoCutPanel(){
 function buildAutoCutPanel(){
   const seq = curSeq();
   const ac = state.autoCut;
-  const box = $('acTracks'), keySel = $('acKey');
+  const box = $('acTracks'), keySel = $('acKey'), baseSel = $('acBase');
   box.innerHTML = '';
   keySel.innerHTML = '';
+  if(baseSel) baseSel.innerHTML = '';
   if(!seq) return;
   const vids = displayTracks(seq).video;
   const existing = new Set(vids.map(t => t.uid));
@@ -10076,9 +10401,23 @@ function buildAutoCutPanel(){
     o.value = t.uid;
     o.textContent = label + (t.isScratch ? ' · пусто' : '');
     keySel.appendChild(o);
+    if(baseSel){
+      const o2 = document.createElement('option');
+      o2.value = t.uid;
+      o2.textContent = label + (t.isScratch ? ' · пусто' : '');
+      baseSel.appendChild(o2);
+    }
   });
   keySel.value = ac.keyUid || (ordered.length ? ordered[0].uid : '');
   if(!ac.keyUid) ac.keyUid = keySel.value || null;
+  if(baseSel){
+    const none = document.createElement('option');
+    none.value = '';
+    none.textContent = 'не использовать';
+    baseSel.insertBefore(none, baseSel.firstChild);
+    if(ac.baseUid && existing.has(ac.baseUid)) baseSel.value = ac.baseUid;
+    else { baseSel.value = ''; ac.baseUid = null; }
+  }
   acUpdateRangeUI();
 }
 function acUpdateRangeUI(){
@@ -10138,6 +10477,7 @@ function startAutoCut(){
   ac.outTrack = null;
   ac.outPos = state.t;   // старт ВСЕГДА от плейхеда — можно продолжить нарезку
   ac.lastCam = null;
+  ac.rrPos = 0;
   ac.count = 0;
   ac.blockEnded = false;
   ac.before = snapshotEdit();
@@ -10397,6 +10737,79 @@ async function acLiftSegment(t, cutT, clip, cam, tracks, opts){
   return copy;
 }
 
+function acPickNextCam(cands, blockStart){
+  const ac = state.autoCut;
+  if(!cands || !cands.length) return null;
+  const lastId = ac.lastCam && ac.lastCam.uid;
+  if(blockStart && ac.keyUid){
+    const k = cands.find(tr => tr.uid === ac.keyUid);
+    if(k) return k;
+  }
+  // очередь из ВСЕХ кандидатов, включая стартовую. lastCam только запрет подряд.
+  const order = (ac.tracks || []).filter(tr => cands.some(p => p.uid === tr.uid));
+  const list = order.length ? order : cands.slice();
+  let seq = [];
+  const base = ac.baseUid && list.find(tr => tr.uid === ac.baseUid);
+  if(base){
+    const others = list.filter(tr => tr.uid !== ac.baseUid);
+    if(!others.length) seq = [base];
+    else {
+      for(const o of others){ seq.push(base); seq.push(o); }
+    }
+  } else seq = list.slice();
+  if(!seq.length) return cands[0];
+  ac.rrPos = ac.rrPos || 0;
+  for(let i = 0; i < seq.length * 2 + 3; i++){
+    const tr = seq[(ac.rrPos + i) % seq.length];
+    if(!tr) continue;
+    if(tr.uid === lastId && seq.length > 1) continue;
+    if(cands.some(p => p.uid === tr.uid)){
+      ac.rrPos = (ac.rrPos + i + 1) % seq.length;
+      return tr;
+    }
+  }
+  return cands.find(tr => tr.uid !== lastId) || cands[0];
+}
+function acPickShotDur(cam, blockStart, min, max, avail, fps){
+  // Длины планов ВАРИАТИВНЫ в [min, max]. Не режем всё под максимум.
+  // Базовая камера — единственная, кому можно max, и то не всегда (чуть короче).
+  // Стартовая: начало блока → max; середина блока → max/3.
+  const ac = state.autoCut;
+  const isStart = !!(ac.keyUid && cam && cam.uid === ac.keyUid);
+  const isBase = !!(ac.baseUid && cam && cam.uid === ac.baseUid);
+  const snap = v => Math.round(Math.max(0, v) * fps) / fps;
+  const between = (lo, hi) => {
+    lo = Math.max(min, Math.min(lo, avail));
+    hi = Math.max(lo, Math.min(hi, avail, max));
+    if(hi <= lo + 1e-9) return lo;
+    return lo + Math.random() * (hi - lo);
+  };
+  let d;
+  if(avail <= min + 1e-6) d = avail;
+  else if(isStart && blockStart){
+    d = Math.min(max, avail); // стартовая в начале блока — максимум
+  } else if(isStart && !blockStart){
+    const target = Math.max(min, Math.min(max, max / 3));
+    const span = Math.max(0.1, Math.min(target * 0.2, (max - min) * 0.12));
+    d = between(target - span, target + span);
+  } else if(isBase){
+    // чаще около максимума, иногда чуть короче
+    if(Math.random() < 0.55) d = between(Math.max(min, max * 0.90), max);
+    else d = between(Math.max(min, max * 0.72), Math.max(min, max * 0.92));
+  } else {
+    // обычные камеры: разброс по диапазону, максимум не трогаем
+    const cap = Math.max(min, max * 0.78);
+    d = between(min, cap);
+  }
+  d = Math.min(d, avail, max);
+  if(avail - d < min && avail - d > 1e-6){
+    if(avail <= max + 1e-6) d = avail;
+    else d = Math.max(min, avail - min);
+  }
+  if(d > avail) d = avail;
+  if(d < min && avail >= min) d = min;
+  return snap(d);
+}
 async function autoCutStep(){
   const seq = curSeq();
   const ac = state.autoCut;
@@ -10437,24 +10850,13 @@ async function autoCutStep(){
     if(!cands.length) return 'done';
     blockStart = true;
   }
-  // выбор камеры: блок начинается с ключевой; дальше — случайная, не та же самая
-  let cam = null;
-  if(blockStart){
-    // начало блока ВСЕГДА с ключевой камеры; её нет под курсором — любая другая
-    const key = tracks.find(tr => tr.uid === ac.keyUid && clipAtTrack(tr, t));
-    const others = cands.filter(tr => tr !== ac.lastCam);
-    cam = key || others[0] || cands[0];
-  } else {
-    const pool = cands.filter(tr => tr !== ac.lastCam);
-    cam = pool.length ? pool[Math.floor(Math.random() * pool.length)] : cands[0];
-  }
+  let cam = acPickNextCam(cands, blockStart);
   const clip = clipAtTrack(cam, t);
   if(!clip) return 'done';
   // линия разреза: ближайшая граница по всем выбранным камерам правее t
   const cutT = acCutLine(t, tracks, clip.end);
   const avail = cutT - t;
   const min = ac.min, max = ac.max;
-  const isKeyStart = blockStart && (cam.uid === ac.keyUid);
   const fps2 = fps;
   if(avail < min - 1e-6){
     // хвост короче минимума. Если он короче НОРМЫ (1 секунда), сначала пробуем
@@ -10486,39 +10888,7 @@ async function autoCutStep(){
         : ' поднят как есть (короче минимума ' + fmtDur(min, fps2) + ')'));
     return 'ok';
   }
-  let dur;
-  if(avail <= max + 1e-6){
-    dur = avail; // последний фрагмент блока — добираем до линии разреза
-  } else if(isKeyStart){
-    dur = max;   // ключевая камера в начале блока — максимум
-    // правило округления: до разреза остаётся меньше 2 секунд — забираем всё
-    if(avail - max < 2 && avail <= max + 2) dur = avail;
-  } else {
-    // ОПТИМИЗАЦИЯ РАСКРОЯ: анализируем оставшуюся длину блока и делим так,
-    // чтобы куски попадали в [min, max] без хвостов (например 15с при min 5 →
-    // 5+5+5, а не 5+7+3). Сначала пробуем ровно по минимуму, иначе — поровну.
-    const exactN = Math.round(avail / min);
-    if(exactN >= 2 && Math.abs(exactN * min - avail) < 1e-6){
-      dur = min; // ровно по минимуму: 15с/5 = 3 куска по 5
-    } else {
-      let N = Math.max(1, Math.ceil(avail / max));
-      let base = avail / N;
-      if(base < min - 1e-6){
-        N = Math.max(1, Math.min(Math.floor(avail / min), 6));
-        base = avail / N;
-      }
-      dur = Math.min(max, Math.max(min, base));
-      dur = Math.round(dur * fps) / fps;
-    }
-    // правило округления: до разреза остаётся меньше 2 секунд — забираем всё
-    if(avail - dur < 2 && avail <= max + 2) dur = avail;
-    else if(avail - dur < min && avail - dur > 1e-6){
-      // хвост короче минимума — оставляем ровно минимум на следующий кусок
-      dur = avail - min;
-    }
-    if(dur < min - 1e-6 && avail - min >= min) dur = min;
-    if(dur > avail) dur = avail;
-  }
+  let dur = acPickShotDur(cam, blockStart, min, max, avail, fps);
   dur = Math.round(dur * fps) / fps;
   if(dur < min - 1e-6) dur = Math.min(min, avail);
   if(dur < min - 1e-6 || dur > avail + 1e-6){
@@ -10681,6 +11051,7 @@ $('btnAutoCutStop').addEventListener('click', stopAutoCut);
 $('acHMin').addEventListener('pointerdown', acHandleDrag('min'));
 $('acHMax').addEventListener('pointerdown', acHandleDrag('max'));
 $('acKey').addEventListener('change', e => { state.autoCut.keyUid = e.target.value || null; });
+if($('acBase')) $('acBase').addEventListener('change', e => { state.autoCut.baseUid = e.target.value || null; });
 $('acNotesSave').addEventListener('click', acSaveNotes);
 $('acNotesClear').addEventListener('click', acClearNotes);
 $('acNotesClose').addEventListener('click', acCloseNotes);
@@ -10784,7 +11155,7 @@ updatePlayUi();
 $('btnMute').addEventListener('click', () => {
   state.muted = !state.muted;
   $('btnMute').textContent = state.muted ? '🔇' : '🔊';
-  for(const e of (state.audioClips||[])) setPlayVolume(e, state.muted ? 0 : (e.c.gain != null ? e.c.gain : 1));
+  for(const e of (state.audioClips||[])) setPlayVolume(e, state.muted ? 0 : clipLiveAudioGain(e.c, state.t), clipLivePan(e.c, state.t));
 });
 
 // разделитель монитор/таймлайн
@@ -10894,9 +11265,15 @@ window.addEventListener('keydown', e => {
     return;
   }
   const tag = (document.activeElement && document.activeElement.tagName) || '';
+  const atype = ((document.activeElement && document.activeElement.type) || '').toLowerCase();
   // выпадающие списки в шапке: снимаем фокус, чтобы горячие клавиши работали всегда
   if(tag === 'SELECT'){ try{ document.activeElement.blur(); }catch(e){} }
-  if(tag === 'INPUT' || tag === 'TEXTAREA') return; // только там, где реально печатают
+  // ползунки/чекбоксы не должны блокировать пробел (play) и прочие хоткеи линейки
+  if(tag === 'INPUT' && (atype === 'range' || atype === 'checkbox' || atype === 'button')){
+    try{ document.activeElement.blur(); }catch(e){}
+  } else if(tag === 'INPUT' && atype === 'number' && code === 'Space'){
+    try{ document.activeElement.blur(); }catch(e){}
+  } else if(tag === 'INPUT' || tag === 'TEXTAREA') return; // только там, где реально печатают
   const seq = curSeq();
   // Avid-буфер: Alt+X — вырезать диапазон меток в буфер, Alt+C — скопировать
   if(e.altKey && !e.ctrlKey && !e.metaKey){
@@ -11062,6 +11439,8 @@ window.addEventListener('keydown', e => {
       if($('newSeqDlg').classList.contains('open')){ $('newSeqDlg').classList.remove('open'); break; }
       if($('exportDlg').classList.contains('open')){ closeExportDialog(); break; }
       if($('gainPop').style.display === 'block'){ hideGainPop(); break; }
+      if($('motionPop') && $('motionPop').style.display === 'block'){ hideMotionPop(); break; }
+      if($('audioPop') && $('audioPop').style.display === 'block'){ hideAudioPop(); break; }
       hideTip();
       state.speakerUid = null;
       setSelection([]);
@@ -11635,7 +12014,8 @@ ru: {
   app_ver:'Версия приложения:',
   gp_reset:'Сброс', gp_note:'0% — тишина · 1000% — усиление',
   ac_title:'✂️ Автомонтаж', ac_sub:'автонарезка камер — только видеодорожки',
-  ac_cams:'Камеры:', ac_key:'Ключевая камера:', ac_key_sub:'ключевая начинает каждый блок и берёт максимум длины',
+  ac_cams:'Камеры:', ac_key:'Стартовая камера:', ac_key_sub:'начало блока — всегда она (макс. длина); в середине — наравне с другими, короче в 3 раза',
+  ac_base:'Базовая камера:', ac_base_sub:'берёт максимальную длину и появляется чаще других камер',
   ac_len:'Длина:', ac_start:'▶ Старт', ac_stop:'⏹ Стоп',
   ac_notes_t:'⚠ Список ошибок', ac_save:'💾 Сохранить TXT', ac_clear:'🗑 Очистить', ac_close:'✕ Закрыть',
   add_media_row:'Добавить медиа…', add_media_row_t:'Выбрать файлы (видео/звук/фото) или перетащить их сюда',
@@ -11673,7 +12053,14 @@ ru: {
   play_fwd_t:'Двойной play вперёд — воспроизведение на двойной скорости вперёд (клавиша L)',
   tp1:'Зелёный светящийся огонёк облетит все части программы и покажет, что где находится и зачем. Подсказка появляется, когда огонёк останавливается, и висит до следующей остановки.',
   tp2:'Прогрессбар над шапкой работает как перемотка видео: потяните его, чтобы вернуться к любому месту тура.',
-  tp3:'Остановить тур — большая красная кнопка «Стоп» в правом верхнем углу. Нажмите её или клавишу Esc.'
+  tp3:'Остановить тур — большая красная кнопка «Стоп» в правом верхнем углу. Нажмите её или клавишу Esc.',
+  farm:'Видеоферма', farm_t:'Открыть Видеоферму в новой вкладке',
+  mp_scale:'Масштаб', mp_opacity:'Альфа', mp_anim_s:'Анимация масштаба', mp_anim_o:'Анимация альфы',
+  mp_add:'+ ключ', mp_prev:'← к ключу', mp_next:'к ключу →', mp_del:'🗑 удалить ключ', mp_clear:'🗑 удалить все анимации',
+  mp_cleared:'Все анимации клипа сняты',
+  ap_gain:'Громкость, dB', ap_pan:'Баланс стерео', ap_anim_g:'Автоматизация звука', ap_anim_p:'Автоматизация баланса',
+  ap_cleared:'Вся автоматизация звука снята',
+  help_anim_t:'Анимация клипа (видео и звук)'
 },
 en: {
   open_xml:'📄 Open XML…', open_xml_t:'Load a project XML file (File → Export → Final Cut Pro XML)',
@@ -11715,7 +12102,8 @@ en: {
   app_ver:'App version:',
   gp_reset:'Reset', gp_note:'0% — silence · 1000% — boost',
   ac_title:'✂️ Auto-cut', ac_sub:'automatic camera cutting — video tracks only',
-  ac_cams:'Cameras:', ac_key:'Key camera:', ac_key_sub:'the key camera starts every block and takes the maximum length',
+  ac_cams:'Cameras:', ac_key:'Start camera:', ac_key_sub:'always opens a block (max length); in the middle takes equal turns, 3× shorter than max',
+  ac_base:'Base camera:', ac_base_sub:'takes maximum fragment length and appears more often than other cameras',
   ac_len:'Length:', ac_start:'▶ Start', ac_stop:'⏹ Stop',
   ac_notes_t:'⚠ Error list', ac_save:'💾 Save TXT', ac_clear:'🗑 Clear', ac_close:'✕ Close',
   add_media_row:'Add media…', add_media_row_t:'Choose files (video/audio/photo) or drag them here',
@@ -11753,7 +12141,14 @@ en: {
   play_fwd_t:'Double play forwards — playback at double speed forwards (key L)',
   tp1:'A glowing green spark will fly around the whole app and show what everything is and what it does. The hint appears when the spark stops and stays until the next stop.',
   tp2:'The progress bar above the header works like video scrubbing: drag it to return to any part of the tour.',
-  tp3:'Stop the tour — the big red button in the top-right corner. Press it or the Esc key.'
+  tp3:'Stop the tour — the big red button in the top-right corner. Press it or the Esc key.',
+  farm:'Video farm', farm_t:'Open Video farm in a new tab',
+  mp_scale:'Scale', mp_opacity:'Alpha', mp_anim_s:'Scale animation', mp_anim_o:'Alpha animation',
+  mp_add:'+ key', mp_prev:'← to key', mp_next:'to key →', mp_del:'🗑 delete key', mp_clear:'🗑 delete all animations',
+  mp_cleared:'All clip animations cleared',
+  ap_gain:'Volume, dB', ap_pan:'Stereo balance', ap_anim_g:'Volume automation', ap_anim_p:'Balance automation',
+  ap_cleared:'All audio automation cleared',
+  help_anim_t:'Clip animation (video and audio)'
 }
 };
 function t(key){
@@ -11909,12 +12304,17 @@ const TR_TEXT = [
   ['btnSnap','snap'],['btnClipThumbs','thumbs'],['btnUndo','undo'],['btnRedo','redo'],
   ['btnTlIn','tl_in'],['btnTlOut','tl_out'],['btnSrcInsert','insert'],['btnSrcRipple','insert_ripple'],
   ['tlHint','tl_hint'],['gpReset','gp_reset'],['gpNote','gp_note'],
-  ['acTitle','ac_title'],['acSub','ac_sub'],['acLblCams','ac_cams'],['acLblKey','ac_key'],['acKeySub','ac_key_sub'],
+  ['acTitle','ac_title'],['acSub','ac_sub'],['acLblCams','ac_cams'],['acLblKey','ac_key'],['acKeySub','ac_key_sub'],['acLblBase','ac_base'],['acBaseSub','ac_base_sub'],
   ['acLblLen','ac_len'],['btnAutoCutStart','ac_start'],['btnAutoCutStop','ac_stop'],['acNotesTitle','ac_notes_t'],
   ['acNotesSave','ac_save'],['acNotesClear','ac_clear'],['acNotesClose','ac_close'],
   ['emptyH1','empty_h1'],['btnOpenXml2','open_xml_btn'],['btnDemo','demo_btn'],['emptyDrop','drop_anywhere'],
   ['statusHint','status_hint'],['btnHelp','help_btn'],['btnHelpNext','help_next'],['btnHelpBack','help_back'],['btnTour','tour_btn'],
-  ['hmTitle','help_title'],['btnTourStart','tour_start']
+  ['hmTitle','help_title'],['btnTourStart','tour_start'],
+  ['brandFarm','farm'],
+  ['mpLblScale','mp_scale'],['mpLblOpacity','mp_opacity'],['mpAnimScaleLbl','mp_anim_s'],['mpAnimOpacityLbl','mp_anim_o'],
+  ['mpAddScaleKey','mp_add'],['mpAddOpacityKey','mp_add'],['mpPrevKey','mp_prev'],['mpNextKey','mp_next'],['mpDelKey','mp_del'],['mpClearAll','mp_clear'],
+  ['apLblGain','ap_gain'],['apLblPan','ap_pan'],['apAnimGainLbl','ap_anim_g'],['apAnimPanLbl','ap_anim_p'],
+  ['apAddGainKey','mp_add'],['apAddPanKey','mp_add'],['apPrevKey','mp_prev'],['apNextKey','mp_next'],['apDelKey','mp_del'],['apClearAll','mp_clear']
 ];
 const TR_TITLE = [
   ['btnOpenXml','open_xml_t'],['btnAddMedia','add_media_t'],['btnExportMp4','export_mp4_t'],['btnFit','fit_t'],
@@ -11926,13 +12326,13 @@ const TR_TITLE = [
   ['btnSrcInsert','insert_t'],['btnSrcRipple','insert_ripple_t'],
   ['btnToolV','tool_v_t'],['btnToolB','tool_b_t'],['btnToolA','tool_a_t'],['btnToolSA','tool_sa_t'],
   ['btnMute','mute_t'],['btnHelp','help_btn_t'],['btnHelpClose','help_close_t'],['tourStop','tour_stop_t'],['tourPause','tour_pause_t'],['btnTour','tour_btn_t'],
-  ['langswitch','lang_t'],['btnPlayBack','play_back_t'],['btnPlayFwd','play_fwd_t']
+  ['langswitch','lang_t'],['btnPlayBack','play_back_t'],['btnPlayFwd','play_fwd_t'],['brandFarm','farm_t']
 ];
 function applyLang(){
   for(const pair of TR_TEXT){ const el = $(pair[0]); if(el) el.textContent = t(pair[1]); }
   for(const pair of TR_TITLE){ const el = $(pair[0]); if(el) el.title = t(pair[1]); }
   const ep = $('emptyP'); if(ep) ep.innerHTML = t('empty_p');
-  const av = $('appVer'); if(av) av.innerHTML = t('app_ver') + ' <b>v4.60</b>';
+  const av = $('appVer'); if(av) av.innerHTML = t('app_ver') + ' <b>v4.67</b>';
   for(const id of ['lblVideo','lblAudio']) { const el = $(id); if(el) el.textContent = t(id === 'lblVideo' ? 'lbl_video' : 'lbl_audio'); }
   for(const pr of [['expTitleTxt','exp_title'],['lblRes','lbl_res'],['lblBr','lbl_br'],['lblRange','lbl_range'],['lblCodec','lbl_codec'],
                    ['lblStop','lbl_stop'],['lblStartExp','lbl_start_exp'],['lblCancel','lbl_cancel'],
@@ -11944,7 +12344,7 @@ function applyLang(){
     const el = $(pr[0]); if(el) el.innerHTML = t(pr[1]); // ссылки сохраняются в переводах
   }
   const nsPh = $('nsName'); if(nsPh) nsPh.placeholder = t('ns_ph');
-  const bs = $('brandSub'); if(bs) bs.textContent = 'v4.60 — ' + t('brand_sub');
+  const bs = $('brandSub'); if(bs) bs.textContent = 'v4.67 — ' + t('brand_sub');
   const lw = $('lbWheelHint'); if(lw) lw.textContent = t('wheel_hint');
   const rh = $('restHint'); if(rh) rh.textContent = t('rest_phrase');
   updateStatus();
@@ -12062,7 +12462,9 @@ const HELP_LINES = {
     'Зажмите <b>ALT</b> и потяните клип — получится <b>дубликат</b> (как в Premiere)',
     'Полоски-дубликаты сверху клипов — <b>один файл использован несколько раз</b>',
     'Жёлтые рамки по краям клипа — <b>режим обрезки</b> (двойной клик по клипу)',
-    'Жёлтые огоньки — <b>короткие планы</b> (короче 1 секунды)'
+    'Жёлтые огоньки — <b>короткие планы</b> (короче 1 секунды)',
+    'Голубые кружки на клипе — <b>ключи масштаба</b>, розовые — <b>ключи альфы</b>',
+    'Зелёные кружки на звуке — <b>ключи громкости (dB)</b>, жёлтые — <b>баланс стерео</b>'
   ],
   en:[
     'The red vertical line is the <b>playhead</b>: the current position of the project',
@@ -12071,13 +12473,15 @@ const HELP_LINES = {
     'Hold <b>ALT</b> and drag a clip to create a <b>duplicate</b> (like Premiere)',
     'Duplicate stripes on top of clips — <b>one file is used several times</b>',
     'Yellow frames on the clip edges — <b>trim mode</b> (double-click a clip)',
-    'Yellow sparks — <b>short shots</b> (shorter than 1 second)'
+    'Yellow sparks — <b>short shots</b> (shorter than 1 second)',
+    'Cyan dots on a clip — <b>scale keys</b>, pink — <b>alpha keys</b>',
+    'Green dots on audio — <b>volume (dB) keys</b>, yellow — <b>stereo balance</b>'
   ]
 };
 const HELP_AUTO = {
   ru:[
     '1. Отметьте <b>камеры</b> (видеодорожки) кнопками в панели — нарезка идёт только по ним',
-    '2. <b>Ключевая камера</b> начинает каждый блок и берёт максимум длины',
+    '2. <b>Стартовая камера</b> в начале блока — максимум длины, в середине блока — в 3 раза короче максимума. <b>Базовая камера</b> одна может брать максимум (и то не всегда) и чередуется чаще остальных. Остальные планы — разной длины в выбранном диапазоне, камеры идут по очереди',
     '3. <b>Длина фрагментов</b>: от 1 до 20 секунд (кружочки на ползунке)',
     '4. <b>Старт</b> — нарезка начинается строго от плейхеда; <b>Стоп</b> — остановка',
     '5. Спорные кусочки <b>поднимаются как есть</b> — пустых мест под видео не бывает',
@@ -12087,13 +12491,31 @@ const HELP_AUTO = {
   ],
   en:[
     '1. Tick the <b>cameras</b> (video tracks) with the panel buttons — cutting uses only them',
-    '2. The <b>key camera</b> starts every block and takes the maximum length',
+    '2. <b>Start camera</b> at block start — max length; in the middle of a block — 3× shorter than max. <b>Base camera</b> may take the maximum (not always) and appears more often. Other shots vary in length; cameras take turns',
     '3. <b>Fragment length</b>: from 1 to 20 seconds (knobs on the slider)',
     '4. <b>Start</b> — cutting begins exactly at the playhead; <b>Stop</b> — halt',
     '5. Problematic pieces are <b>lifted as they are</b> — there are never gaps under video',
     '6. Errors go to the <b>error list</b> — they never stop the cut',
     '7. <b>💾 Save TXT</b> — the error list to a file; <b>🗑 Clear</b> — empty the list',
     '8. The <b>\\</b> key — yellow sparks on shots shorter than 1 second; <b>`</b> — fullscreen panel under the mouse'
+  ]
+};
+const HELP_ANIM = {
+  ru:[
+    'Двойной клик по <b>видеоклипу</b> — жёлтые рамки обрезки и шестерёнка ⚙ настроек',
+    '⚙ видео: <b>масштаб</b> и <b>альфа</b>. «+ ключ» ставит ключ <b>только этого</b> параметра на плейхед',
+    'LOG — плавная S-кривая между ключами. «Удалить ключ» — точка под плейхедом, «удалить все анимации» — всё с клипа',
+    'Двойной клик по <b>звуку</b> → ⚙: громкость <b>−100…+100 dB</b> (0 — без изменения) и <b>баланс</b> L/R',
+    'Ключи звука тоже отдельные: можно автоматизировать только баланс, не трогая громкость',
+    'Процент на динамике клипа умножается на автоматизацию dB. После ползунка пробел снова играет линейку'
+  ],
+  en:[
+    'Double-click a <b>video clip</b> — yellow trim frames and the ⚙ settings gear',
+    '⚙ video: <b>scale</b> and <b>alpha</b>. “+ key” plants a key for <b>that parameter only</b> at the playhead',
+    'LOG — smooth S-curve between keys. “Delete key” — the point under the playhead, “delete all animations” — everything on the clip',
+    'Double-click <b>audio</b> → ⚙: volume <b>−100…+100 dB</b> (0 = unchanged) and L/R <b>balance</b>',
+    'Audio keys are separate too: automate balance without touching volume',
+    'The speaker % gain multiplies dB automation. After a slider, Space plays the timeline again'
   ]
 };
 function renderHelpKeyboard(){
@@ -12257,6 +12679,19 @@ function renderHelpContent(){
       list.appendChild(d);
     }
     p2.appendChild(list);
+    const h2 = document.createElement('h3');
+    h2.className = 'hp-h3';
+    h2.textContent = t('help_anim_t');
+    p2.appendChild(h2);
+    const list2 = document.createElement('div');
+    list2.className = 'hp-list';
+    for(const line of (HELP_ANIM[state.lang] || HELP_ANIM.ru)){
+      const d = document.createElement('div');
+      d.className = 'hl-item';
+      d.innerHTML = line;
+      list2.appendChild(d);
+    }
+    p2.appendChild(list2);
   }
   for(const el of document.querySelectorAll('[data-h]')) el.textContent = t(el.getAttribute('data-h'));
 }
@@ -12309,8 +12744,8 @@ const TOUR_STEPS_DEF = [
    ru:['Дорожки и клипы', 'Клипы перетаскиваются, режутся лезвием, обрезаются двойным кликом (жёлтые рамки). На аудио-кликах — громкость по клику на динамик.'],
    en:['Tracks and clips', 'Clips drag, cut with the blade, trim with a double-click (yellow frames). On audio clips — volume by clicking the speaker.']},
   {sel:'#btnAutoCut',
-   ru:['Автомонтаж', 'Автоматическая нарезка камер: выберите камеры и диапазон длины, Старт — и нарезка идёт от плейхеда.'],
-   en:['Auto-cut', 'Automatic camera cutting: choose cameras and a length range, press Start — cutting runs from the playhead.']},
+   ru:['Автомонтаж', 'Нарезка камер от плейхеда. Стартовая камера: в начале блока максимум, в середине — втрое короче. Базовая может быть самой длинной. Остальные планы разной длины в диапазоне.'],
+   en:['Auto-cut', 'Camera cutting from the playhead. Start camera: max at block start, 3× shorter in the middle. Base camera may take the longest shot. Other shots vary inside the length range.']},
   {sel:'#btnExportMp4',
    ru:['Экспорт MP4', 'Готовое видео: битрейт, разрешение, диапазон по меткам I/O. Имя файла — имя секвенции.'],
    en:['Export MP4', 'The finished video: bitrate, resolution, range by I/O marks. The file name is the sequence name.']},
@@ -12330,14 +12765,68 @@ const TOUR_STEPS_DEF = [
    ru:['Плейхед', 'Красная линия — текущая позиция. Хватается на линейке, двигается стрелками и клавишами 1/2.'],
    en:['The playhead', 'The red line is the current position. Grab it on the ruler, move it with arrows and the 1/2 keys.']}
 ];
+const TOUR_ANIM_STEPS = [
+  {kind:'anim', phase:'drop',
+   ru:['Кладём клип на линейку', 'Большой курсор кладёт учебный фрагмент на дорожку. Так же вы перетаскиваете ролик из бина.'],
+   en:['Drop a clip on the timeline', 'The big cursor drops a practice clip on the track — the same way you drag a clip from the bin.']},
+  {kind:'anim', phase:'dbl',
+   ru:['Двойной клик', 'Два раза по клипу: жёлтые рамки — обрезка длины, шестерёнка ⚙ — меню анимации.'],
+   en:['Double-click', 'Click the clip twice: yellow frames trim length, the ⚙ gear opens the animation menu.']},
+  {kind:'anim', phase:'vscale',
+   ru:['Масштаб', 'Ползунок масштаба: 100% — как есть, больше — крупнее, меньше — мельче. Меняет размер картинки в кадре.'],
+   en:['Scale', 'The scale slider: 100% is original size, higher zooms in, lower shrinks. It changes how big the picture is in the frame.']},
+  {kind:'anim', phase:'vscalekey',
+   ru:['Ключ масштаба', '«+ ключ» рядом с масштабом ставит точку только для масштаба на плейхеде. Альфу не трогает.'],
+   en:['Scale key', '“+ key” next to scale plants a point for scale only at the playhead. Alpha is left alone.']},
+  {kind:'anim', phase:'vopacity',
+   ru:['Альфа', 'Прозрачность: 100% — непрозрачно, 0% — невидимо. Нужна для наложений и titров.'],
+   en:['Alpha', 'Opacity: 100% is solid, 0% is invisible. Use it for overlays and titles.']},
+  {kind:'anim', phase:'vopacitykey',
+   ru:['Ключ альфы', 'Отдельная кнопка «+ ключ» у альфы. Короткая анимация в конце ролика: два ключа альфы, масштаб не нужен.'],
+   en:['Alpha key', 'Its own “+ key” button. A short fade at the end of a shot: two alpha keys, no scale needed.']},
+  {kind:'anim', phase:'vclear',
+   ru:['Удалить все анимации', 'Одна кнопка снимает все ключи масштаба и альфы с этого клипа.'],
+   en:['Delete all animations', 'One button clears every scale and alpha key on this clip.']},
+  {kind:'anim', phase:'asound',
+   ru:['Теперь звук', 'Тот же путь: двойной клик по аудиоклипу → ⚙. Учебный звуковой блок.'],
+   en:['Now audio', 'Same path: double-click an audio clip → ⚙. Here is a practice sound block.']},
+  {kind:'anim', phase:'again',
+   ru:['Громкость dB', '0 dB — без изменения. Влево тише (до −100), вправо громче (до +100). Это автоматизация, не ползунок динамика.'],
+   en:['Volume dB', '0 dB means unchanged. Left is quieter (down to −100), right is louder (up to +100). This is automation, not the speaker % slider.']},
+  {kind:'anim', phase:'againkey',
+   ru:['Ключ громкости', '«+ ключ» у dB ставит только громкость. Баланс не затрагивается.'],
+   en:['Volume key', '“+ key” beside dB plants volume only. Balance is untouched.']},
+  {kind:'anim', phase:'apan',
+   ru:['Баланс стерео', '0 — по центру. −100 только левый канал, +100 только правый.'],
+   en:['Stereo balance', '0 is centre. −100 is left only, +100 is right only.']},
+  {kind:'anim', phase:'apankey',
+   ru:['Ключ баланса', 'Отдельный «+ ключ»: можно покачать панораму, не трогая громкость.'],
+   en:['Balance key', 'Its own “+ key”: pan without touching volume.']},
+  {kind:'anim', phase:'aclear',
+   ru:['Сброс звука', '«Удалить все анимации» на звуке снимает ключи dB и баланса.'],
+   en:['Clear audio', '“Delete all animations” on audio removes dB and balance keys.']}
+];
 function tourSteps(){
-  return TOUR_STEPS_DEF.filter(s => {
+  const vis = s => {
+    if(s.kind === 'anim') return true;
     const el = document.querySelector(s.sel);
     if(!el) return false;
     const r = el.getBoundingClientRect();
-    // нулевые элементы пропускаем, чтобы шарик не улетал в 0,0
     return r.width > 0 && r.height > 0;
-  }).map(s => ({sel: s.sel, title: (s[state.lang] || s.ru)[0], text: (s[state.lang] || s.ru)[1]}));
+  };
+  const out = [];
+  for(const s of TOUR_STEPS_DEF){
+    if(!vis(s)) continue;
+    out.push(s);
+    if(s.sel === '#tlTrackRows') out.push.apply(out, TOUR_ANIM_STEPS);
+  }
+  return out.map(s => ({
+    sel: s.sel || '#tlTrackRows',
+    kind: s.kind || 'ui',
+    phase: s.phase || '',
+    title: (s[state.lang] || s.ru)[0],
+    text: (s[state.lang] || s.ru)[1]
+  }));
 }
 function startTour(){
   const steps = tourSteps();
@@ -12446,6 +12935,11 @@ function tourTargetPoint(el){
 }
 function tourPlace(idx, instant){
   const step = TOUR.steps[idx];
+  if(step && step.kind === 'anim'){
+    tourAnimPlace(step, instant);
+    return;
+  }
+  tourAnimHideDemo();
   const el = document.querySelector(step.sel);
   if(!el) return;
   try{ el.scrollIntoView({block: 'center'}); }catch(e){}
@@ -12465,10 +12959,179 @@ function tourPlace(idx, instant){
       TOUR.sy = parseFloat(ball.style.top) || ny;
     }
     TOUR.lastTrail = TOUR.time;
-    // подсказка появляется отдельно — когда огонёк ОСТАНОВИЛСЯ (tourShowTip)
   };
   if(instant) doPlace();
-  else setTimeout(doPlace, 180); // после прокрутки к цели
+  else setTimeout(doPlace, 180);
+}
+function tourAnimEnsure(){
+  let layer = $('tourAnimLayer');
+  if(!layer) return null;
+  layer.style.display = 'block';
+  if(layer.dataset.ready === '1') return layer;
+  const L = state.lang === 'en';
+  layer.innerHTML = '<div id="tourMiniTl">'
+    + '<div class="tm-ruler">00:00:00:00 &nbsp; 00:00:05:00 &nbsp; 00:00:10:00</div>'
+    + '<div class="tm-row v" id="tourMiniV"><div class="tm-lab">V1</div>'
+    + '<div id="tourFakeClip" class="vclip"><span class="tf-frame l"></span><span class="tf-name">clip_01</span><span class="tf-gear">⚙</span><span class="tf-frame r"></span></div></div>'
+    + '<div class="tm-row a" id="tourMiniA"><div class="tm-lab">A1</div>'
+    + '<div id="tourFakeAudio" class="vclip" style="display:none;background:linear-gradient(90deg,#3d6b4a,#2a4a32);border-color:#8fd89a"><span class="tf-frame l"></span><span class="tf-name">audio_01</span><span class="tf-gear">⚙</span><span class="tf-frame r"></span></div></div>'
+    + '</div>'
+    + '<div id="tourMouse"><span class="clk"></span><svg viewBox="0 0 24 24" width="42" height="42"><path d="M5.5 3.2 19 10.4l-7 1.6 3.6 7.2-2.6 1.2-3.8-7.5L5.5 14z" fill="#e8ebf2" stroke="#14161c" stroke-width="1"/></svg></div>'
+    + '<div id="tourDemoPop"></div><div id="tourArrow"></div>';
+  layer.dataset.ready = '1';
+  return layer;
+}
+function tourAnimHideDemo(){
+  const layer = $('tourAnimLayer');
+  if(layer) layer.style.display = 'none';
+}
+function tourAnimCleanup(){
+  const layer = $('tourAnimLayer');
+  if(layer){ layer.style.display = 'none'; layer.innerHTML = ''; delete layer.dataset.ready; }
+}
+function tourPointTo(nx, ny, instant){
+  const ball = $('tourBall');
+  TOUR.tx = nx; TOUR.ty = ny;
+  TOUR.arcSign = (TOUR.i % 2 === 0) ? 1 : -1;
+  if(instant || TOUR.sx === undefined){
+    TOUR.sx = nx; TOUR.sy = ny;
+    if(ball){ ball.style.left = nx + 'px'; ball.style.top = ny + 'px'; }
+  } else if(ball){
+    TOUR.sx = parseFloat(ball.style.left) || nx;
+    TOUR.sy = parseFloat(ball.style.top) || ny;
+  }
+  TOUR.lastTrail = TOUR.time;
+}
+function tourAnimBuildPop(kind){
+  const pop = $('tourDemoPop');
+  if(!pop) return;
+  const L = state.lang === 'en';
+  if(kind === 'video'){
+    pop.innerHTML = '<div style="font-weight:700;margin-bottom:6px">⚙ ' + (L ? 'Clip animation' : 'Анимация клипа') + '</div>'
+      + '<div class="td-row" data-hl="vscale"><label>' + t('mp_scale') + '</label><input type="range" min="0" max="100" value="70"><button class="tbtn sm" data-hl="vscalekey">' + t('mp_add') + '</button></div>'
+      + '<div class="td-row" data-hl="vopacity"><label>' + t('mp_opacity') + '</label><input type="range" min="0" max="100" value="100"><button class="tbtn sm" data-hl="vopacitykey">' + t('mp_add') + '</button></div>'
+      + '<div class="td-row" data-hl="vclear"><button class="tbtn sm">' + t('mp_clear') + '</button></div>';
+  } else {
+    pop.innerHTML = '<div style="font-weight:700;margin-bottom:6px">🔊 ' + (L ? 'Audio automation' : 'Автоматизация звука') + '</div>'
+      + '<div class="td-row" data-hl="again"><label>' + t('ap_gain') + '</label><input type="range" min="-100" max="100" value="0"><button class="tbtn sm" data-hl="againkey">' + t('mp_add') + '</button></div>'
+      + '<div class="td-row" data-hl="apan"><label>' + t('ap_pan') + '</label><input type="range" min="-100" max="100" value="0"><button class="tbtn sm" data-hl="apankey">' + t('mp_add') + '</button></div>'
+      + '<div class="td-row" data-hl="aclear"><button class="tbtn sm">' + t('mp_clear') + '</button></div>';
+  }
+  pop.style.display = 'block';
+}
+function tourMiniLayout(){
+  const mini = $('tourMiniTl');
+  const wrap = $('timelineWrap') || $('tlTrackRows');
+  const wr = wrap ? wrap.getBoundingClientRect() : {left:40, top:window.innerHeight*0.55, width:window.innerWidth-80, height:200};
+  const w = Math.min(640, Math.max(320, wr.width * 0.72));
+  const h = 168;
+  const left = Math.max(24, wr.left + (wr.width - w) / 2);
+  const top = Math.max(120, Math.min(wr.top + 8, window.innerHeight - h - 160));
+  if(mini){
+    mini.style.left = left + 'px';
+    mini.style.top = top + 'px';
+    mini.style.width = w + 'px';
+  }
+  return {left, top, w, h};
+}
+function tourMouseTo(x, y){
+  const mouse = $('tourMouse');
+  if(!mouse) return;
+  mouse.style.display = 'block';
+  mouse.style.left = x + 'px';
+  mouse.style.top = y + 'px';
+}
+function tourMouseDblClick(){
+  const mouse = $('tourMouse');
+  if(!mouse) return;
+  mouse.classList.remove('click1','click2');
+  void mouse.offsetWidth;
+  mouse.classList.add('click1','click2');
+  setTimeout(() => mouse.classList.remove('click1','click2'), 700);
+}
+function tourAnimPlace(step, instant){
+  tourAnimEnsure();
+  const box = tourMiniLayout();
+  const clip = $('tourFakeClip');
+  const aclip = $('tourFakeAudio');
+  const pop = $('tourDemoPop');
+  const ph = step.phase;
+  const isAudio = ['asound','again','againkey','apan','apankey','aclear'].indexOf(ph) >= 0;
+  if(clip){
+    clip.style.display = 'block';
+    clip.style.width = '180px';
+    clip.style.left = (ph === 'drop' ? '48px' : '120px');
+    clip.classList.toggle('trim', ph === 'dbl' || (!isAudio && ph !== 'drop' && ph !== 'asound'));
+  }
+  if(aclip){
+    aclip.style.display = isAudio ? 'block' : 'none';
+    aclip.style.width = '180px';
+    aclip.style.left = '120px';
+    aclip.classList.toggle('trim', ph === 'asound' || isAudio);
+  }
+  const vrow = $('tourMiniV');
+  const arow = $('tourMiniA');
+  const targetEl = isAudio ? aclip : clip;
+  const tr = targetEl ? targetEl.getBoundingClientRect() : {left: box.left+120, top: box.top+40, width:180, height:40};
+  if(ph === 'drop'){
+    if(pop) pop.style.display = 'none';
+    tourMouseTo(box.left + 70, box.top + 50);
+    setTimeout(() => { if(clip) clip.style.left = '120px'; tourMouseTo(box.left + 200, box.top + 55); }, 80);
+    tourPointTo(box.left + box.w/2, box.top + 20, instant);
+    tourAnimArrow(null);
+    TOUR.animBox = box;
+    return;
+  }
+  if(ph === 'dbl'){
+    if(pop) pop.style.display = 'none';
+    tourMouseTo(tr.left + tr.width/2, tr.top + tr.height/2);
+    setTimeout(tourMouseDblClick, 200);
+    tourPointTo(tr.left + tr.width/2, tr.top - 8, instant);
+    tourAnimArrow(null);
+    TOUR.animBox = box;
+    return;
+  }
+  if(ph === 'asound'){
+    if(pop) pop.style.display = 'none';
+    tourMouseTo(tr.left + tr.width/2, tr.top + tr.height/2);
+    setTimeout(tourMouseDblClick, 200);
+    tourPointTo(tr.left + tr.width/2, tr.top - 8, instant);
+    tourAnimArrow(null);
+    TOUR.animBox = box;
+    return;
+  }
+  tourAnimBuildPop(isAudio ? 'audio' : 'video');
+  if(pop){
+    const px = Math.min(window.innerWidth - 430, box.left + box.w + 12);
+    const py = Math.max(56, box.top - 8);
+    pop.style.left = px + 'px';
+    pop.style.top = py + 'px';
+  }
+  const hl = pop && pop.querySelector('[data-hl="' + ph + '"]');
+  if(pop) for(const n of pop.querySelectorAll('.td-hl')) n.classList.remove('td-hl');
+  if(hl) hl.classList.add('td-hl');
+  const br = hl ? hl.getBoundingClientRect() : (pop ? pop.getBoundingClientRect() : tr);
+  const nx = br.left + Math.min(40, br.width/2);
+  const ny = br.top + br.height / 2;
+  tourMouseTo(br.right - 12, ny);
+  tourPointTo(nx, ny, instant);
+  tourAnimArrow({x: nx - 30, y: ny}, {x: br.left + 8, y: ny});
+  TOUR.animBox = box;
+}
+function tourAnimArrow(from, to){
+  const a = $('tourArrow');
+  if(!a) return;
+  if(!from || !to){ a.style.display = 'none'; return; }
+  const dx = to.x - from.x, dy = to.y - from.y;
+  const len = Math.hypot(dx, dy) || 1;
+  a.style.display = 'block';
+  a.style.left = from.x + 'px';
+  a.style.top = from.y + 'px';
+  a.innerHTML = '<svg width="' + Math.ceil(len+8) + '" height="12" viewBox="0 0 ' + (len+8) + ' 12">'
+    + '<line x1="0" y1="6" x2="' + (len-8) + '" y2="6" stroke="#7dff9a" stroke-width="3"/>'
+    + '<polygon points="' + (len-2) + ',6 ' + (len-12) + ',1 ' + (len-12) + ',11" fill="#7dff9a"/></svg>';
+  a.style.transform = 'rotate(' + (Math.atan2(dy, dx)*180/Math.PI) + 'deg)';
+  a.style.transformOrigin = '0 6px';
 }
 /* Подсказка тура: показывается у огонька только после его остановки.
    Висит, пока огонёк не долетит до следующего места (больше 4 секунд).
@@ -12478,15 +13141,27 @@ function tourShowTip(idx){
   if(!step) return;
   const tip = $('tourTip');
   tip.innerHTML = '<b>' + step.title + '</b><br>' + step.text;
-  const tw = Math.min(300, Math.max(230, window.innerWidth - 100));
+  const tw = Math.min(320, Math.max(240, window.innerWidth - 100));
   tip.style.width = tw + 'px';
-  let tx = TOUR.tx + 20, ty = TOUR.ty - 12;
-  if(tx + tw > window.innerWidth - 50) tx = Math.max(50, TOUR.tx - tw - 20);
-  if(tx < 50) tx = 50;
-  if(tx + tw > window.innerWidth - 50) tx = window.innerWidth - 50 - tw;
-  if(ty < 50) ty = 50;
-  const th = tip.offsetHeight || 130;
-  if(ty + th > window.innerHeight - 50) ty = Math.max(50, window.innerHeight - 50 - th);
+  tip.style.display = 'block';
+  const th = tip.offsetHeight || 140;
+  let tx, ty;
+  if(step.kind === 'anim' && TOUR.animBox){
+    const b = TOUR.animBox;
+    tx = b.left;
+    ty = Math.max(16, b.top - th - 12);
+    if(ty < 16){
+      tx = Math.max(16, b.left - tw - 16);
+      ty = b.top;
+      if(tx < 16){ tx = 16; ty = 16; }
+    }
+  } else {
+    tx = TOUR.tx + 22; ty = TOUR.ty + 18;
+    if(tx + tw > window.innerWidth - 24) tx = Math.max(16, TOUR.tx - tw - 22);
+    if(ty + th > window.innerHeight - 24) ty = Math.max(16, TOUR.ty - th - 18);
+  }
+  tx = Math.max(16, Math.min(tx, window.innerWidth - tw - 16));
+  ty = Math.max(16, Math.min(ty, window.innerHeight - th - 16));
   tip.style.left = Math.round(tx) + 'px';
   tip.style.top = Math.round(ty) + 'px';
 }
@@ -12500,6 +13175,7 @@ function stopTour(){
   $('tourStop').style.display = 'none';
   $('tourPause').style.display = 'none';
   for(const el of document.querySelectorAll('.tourTrail')) el.remove();
+  tourAnimCleanup();
   openHelp();
   helpGo(1); // после «Стоп» панель помощи всегда с первой страницы
   toast(t('tour_stopped'), '');
@@ -12626,5 +13302,5 @@ try{
 
 updatePlayhead();
 </script>
-</body>
+<script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a315df9c5b73bbe7',t:'MTc4Nzc3OTE1Mw=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
