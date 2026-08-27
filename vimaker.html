@@ -886,7 +886,7 @@ input[type=range]{accent-color:var(--accent)}
   box-shadow:0 6px 18px rgba(0,0,0,.55);
 }
 .fs-close-btn:hover{background:#d32f2f}
-/* ===== v4.87 ===== */
+/* ===== v4.93 ===== */
 .clipBlock .cname{ opacity:.5; }
 #tlInner.tool-tsf .tlTrackRow, #tlInner.tool-tsf .tlContent{ cursor:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='26' height='26' viewBox='0 0 26 26'><path d='M3 7h16m0 0-5-4.5m5 4.5-5 4.5' stroke='white' stroke-width='2.4' fill='none' stroke-linecap='round' stroke-linejoin='round'/><path d='M3 19h16m0 0-5-4.5m5 4.5-5 4.5' stroke='white' stroke-width='2.4' fill='none' stroke-linecap='round' stroke-linejoin='round'/></svg>") 13 13, pointer; }
 #tlInner.tool-tsb .tlTrackRow, #tlInner.tool-tsb .tlContent{ cursor:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='26' height='26' viewBox='0 0 26 26'><path d='M23 7H7m0 0 5-4.5M7 7l5 4.5' stroke='white' stroke-width='2.4' fill='none' stroke-linecap='round' stroke-linejoin='round'/><path d='M23 19H7m0 0 5-4.5M7 19l5 4.5' stroke='white' stroke-width='2.4' fill='none' stroke-linecap='round' stroke-linejoin='round'/></svg>") 13 13, pointer; }
@@ -960,7 +960,7 @@ input[type=range]{accent-color:var(--accent)}
 <body>
 
 <header id="topbar">
-  <div class="brand"><span class="logo">▶</span> Vimaker <span class="sub" id="brandSub">v4.87 — online видео редактор, аналог Adobe Premiere, DaVinci</span> <a class="author" href="https://t.me/psihoboom" target="_blank" rel="noopener" title="Телеграм автора">Автор: AMPIRION</a> <a class="farm" id="brandFarm" href="https://ampirion.github.io/videoferma/" target="_blank" rel="noopener" title="Видеоферма">Видеоферма</a></div>
+  <div class="brand"><span class="logo">▶</span> Vimaker <span class="sub" id="brandSub">v4.93 — online видео редактор, аналог Adobe Premiere, DaVinci</span> <a class="author" href="https://t.me/psihoboom" target="_blank" rel="noopener" title="Телеграм автора">Автор: AMPIRION</a> <a class="farm" id="brandFarm" href="https://ampirion.github.io/videoferma/" target="_blank" rel="noopener" title="Видеоферма">Видеоферма</a></div>
   <div class="sep"></div>
   <div class="sep"></div>
   <button id="btnExportMp4" class="tbtn primary" title="Экспорт видео: битрейт, разрешение, диапазон по меткам I/O">🎬 MP4</button>
@@ -1218,7 +1218,7 @@ input[type=range]{accent-color:var(--accent)}
     <button class="tbtn primary" id="btnOpenXml2" style="font-size:13.5px;padding:9px 18px">📄 Выбрать XML-файл…</button>
     <button class="tbtn" id="btnDemo" style="font-size:13.5px;padding:9px 18px;margin-left:8px">✨ Открыть демо-проект</button>
     <p id="emptyDrop" style="margin-top:18px; color:var(--dimmer); font-size:12px">Можно просто перетащить файл XML в окно браузера</p>
-    <p class="verline" id="appVer">Версия приложения: <b>v4.87</b></p>
+    <p class="verline" id="appVer">Версия приложения: <b>v4.93</b></p>
   </div>
 </div>
 
@@ -3373,34 +3373,29 @@ function buildTimeline(){
       const fout = fadeSlot(clip, 'out');
       if(fout && fout.partnerUid){
         const partner = track.clips.find(c => c.uid === fout.partnerUid);
-        const pk = clip.uid + '>' + (partner ? partner.uid : '');
+        const abut = partner && Math.abs(clip.end - partner.start) < 0.12;
+        const pk = clip.uid + '>' + (partner && abut ? partner.uid : clip.uid);
         if(!paintedPair.has(pk)){
           paintedPair.add(pk);
-          paintFadeBand(clip, partner || clip, fout, track, null);
+          paintFadeBand(clip, abut ? partner : clip, fout, track, abut ? null : clip);
         }
       } else if(fout && !fout.partnerUid){
         paintFadeBand(clip, clip, fout, track, clip);
       }
       const fin = fadeSlot(clip, 'in');
       if(fin && fin.partnerUid){
-        /* pair already painted from left.out */
-      } else if(fin){
-        const live = track.clips.filter(c => !c.deleted).slice().sort((a,b)=>a.start-b.start);
-        const ix = live.indexOf(clip);
-        const prev = ix > 0 ? live[ix-1] : null;
-        if(prev && Math.abs(prev.end - clip.start) < 0.08){
-          const cut = (prev.end + clip.start) / 2;
-          fin.partnerUid = prev.uid; fin.cut = cut;
-          if(!fadeSlot(prev, 'out')) setFadeSlot(prev, {role:'out', kind: fin.kind, dur: fin.dur, partnerUid: clip.uid, cut});
-          else { const fo = fadeSlot(prev,'out'); fo.partnerUid = clip.uid; if(fo.cut == null) fo.cut = cut; if(!fo.dur) fo.dur = fin.dur; }
-          const pk = prev.uid + '>' + clip.uid;
+        const partner = track.clips.find(c => c.uid === fin.partnerUid);
+        if(partner && Math.abs(partner.end - clip.start) < 0.12){
+          const pk = partner.uid + '>' + clip.uid;
           if(!paintedPair.has(pk)){
             paintedPair.add(pk);
-            paintFadeBand(prev, clip, fin, track, null);
+            paintFadeBand(partner, clip, fin, track, null);
           }
         } else {
           paintFadeBand(clip, clip, fin, track, clip);
         }
+      } else if(fin){
+        paintFadeBand(clip, clip, fin, track, clip);
       }
     }
     // ручка: перетаскивание нижнего края заголовка меняет высоту ТОЛЬКО этой дорожки
@@ -3596,6 +3591,11 @@ function setTlMark(kind, snap){
   if(snap) t = snapToCuts(t, seq); // SHIFT — магнит к стыкам
   const m = state.tlMarks || (state.tlMarks = {in: null, out: null});
   m[kind] = t;
+  if(kind === 'in' && m.out == null){
+    const end = (typeof activeEnd === 'function' ? activeEnd(seq) : 0) || seq.durSec || t;
+    m.out = Math.max(t, end);
+  }
+  if(kind === 'out' && m.in == null) m.in = 0;
   if(m.in != null && m.out != null && m.in > m.out){ const x = m.in; m.in = m.out; m.out = x; }
   buildTlMarks(seq);
   updateTlSelInfo();
@@ -4110,7 +4110,20 @@ function applyJoinFade(kind){
   if(!join || (!join.left && !join.right)){ toast('Нет стыка у плейхеда — кликните край клипа', 'warn'); return; }
   let left = join.left, right = join.right;
   if(left && right){
-    if(fadeSlot(left, 'out') && fadeSlot(right, 'in')){ toast('На этом стыке уже есть переход', 'warn'); return; }
+    const fo = fadeSlot(left, 'out'), fi = fadeSlot(right, 'in');
+    const live = !!(fo && fi && Math.abs(left.end - right.start) < 0.12);
+    if(live){ toast('На этом стыке уже есть переход', 'warn'); return; }
+    // обломки после дубля (партнёр уехал) — не блокируем новый фейд
+    if(fo && fo.partnerUid && fo.partnerUid !== right.uid){
+      const p = track.clips.find(c => c.uid === fo.partnerUid);
+      if(p && Math.abs(left.end - p.start) < 0.12){ toast('На этом стыке уже есть переход', 'warn'); return; }
+      left.xfadeOut = null; if(left.xfade && left.xfade.role === 'out') left.xfade = null;
+    }
+    if(fi && fi.partnerUid && fi.partnerUid !== left.uid){
+      const p = track.clips.find(c => c.uid === fi.partnerUid);
+      if(p && Math.abs(p.end - right.start) < 0.12){ toast('На этом стыке уже есть переход', 'warn'); return; }
+      right.xfadeIn = null; if(right.xfade && right.xfade.role === 'in') right.xfade = null;
+    }
   }
   if(!(left && right)){
     const solo = left || right;
@@ -4277,7 +4290,8 @@ async function drawClipFrameOnCanvas(ctx, clip, t, cache, w, h, opts){
     return false;
   }
   const srcUrl = (opts && opts.useProxy) ? mediaUrlForPreview(med) : med.url;
-  const cacheKey = 'vid:' + clip.fileId + ':' + srcUrl;
+  const slot = (opts && opts.exportSlot != null) ? opts.exportSlot : 0;
+  const cacheKey = 'vid:' + clip.fileId + ':' + srcUrl + ':' + slot;
   let v = cache.get(cacheKey);
   if(!v){
     v = document.createElement('video');
@@ -4854,21 +4868,43 @@ async function createPreviewSegment(seq, t0, t1, reason, quality){
   let H = Math.round(W / ar / 2) * 2;
   if(H < 2){ H = good ? 720 : 360; W = Math.round(H * ar / 2) * 2; }
   const total = Math.max(1, Math.ceil(dur * fps));
-  const canvas = document.createElement('canvas'); canvas.width = W; canvas.height = H;
-  const ctx = canvas.getContext('2d');
+  const nPar = Math.min(total, Math.max(1, Math.round(fps || 25)), 32);
+  const canvases = [];
+  const ctxs = [];
+  for(let sl = 0; sl < nPar; sl++){
+    const cnv = document.createElement('canvas'); cnv.width = W; cnv.height = H;
+    canvases.push(cnv);
+    ctxs.push(cnv.getContext('2d'));
+  }
+  const encCanvas = document.createElement('canvas'); encCanvas.width = W; encCanvas.height = H;
+  const encCtx = encCanvas.getContext('2d');
   const output = new Mediabunny.Output({format:new Mediabunny.Mp4OutputFormat(), target:new Mediabunny.BufferTarget()});
-  const videoSource = new Mediabunny.CanvasSource(canvas, {codec:'avc', quality:new Mediabunny.Quality({bitrate: good ? 3500000 : 900000, bitrateMode:'constant'}), keyFrameInterval:2});
+  const videoSource = new Mediabunny.CanvasSource(encCanvas, {codec:'avc', quality:new Mediabunny.Quality({bitrate: good ? 3500000 : 900000, bitrateMode:'constant'}), keyFrameInterval:2});
   output.addVideoTrack(videoSource);
   await output.start();
-  const cache = new Map();
+  let cache = new Map();
+  try{ cache = await prewarmExportMedia(seq, t0, t1, nPar); }catch(e){}
+  const bitmaps = new Array(total);
+  for(let wave = 0; wave < total; wave += nPar){
+    if(state.cacheAbort) throw new Error('CASH остановлен');
+    const chunk = Math.min(nPar, total - wave);
+    const part = await Promise.all(Array.from({length: chunk}, (_, sl) => (async () => {
+      if(state.cacheAbort) return null;
+      const t = Math.min(t1 - 1e-4, t0 + (wave + sl) / fps);
+      await drawFrame(ctxs[sl], t, seq, cache, W, H, {useProxy:true, exportSlot: sl});
+      try{ return await createImageBitmap(canvases[sl]); }catch(e){ return null; }
+    })()));
+    for(let sl = 0; sl < part.length; sl++) bitmaps[wave + sl] = part[sl];
+    updateCacheStatus((good ? 'CASH: ' : 'CASH: ') + esc(reason||'участок') + ' <span class="cachebar"><i style="width:' + Math.round((wave+chunk)/total*100) + '%"></i></span>');
+  }
   for(let i=0;i<total;i++){
     if(state.cacheAbort) throw new Error('CASH остановлен');
-    const t = Math.min(t1 - 1e-4, t0 + i / fps);
-    await drawFrame(ctx, t, seq, cache, W, H, {useProxy:true});
+    const bmp = bitmaps[i];
+    if(bmp){
+      encCtx.drawImage(bmp, 0, 0, W, H);
+      try{ bmp.close(); }catch(e){}
+    }
     await videoSource.add(i / fps, 1 / fps);
-    const pct = Math.round((i+1)/total*100);
-    updateCacheStatus((good ? 'CASH quality-cache: ' : 'FAST render-cache: ') + esc(reason||'участок') + ' <span class="cachebar"><i style="width:' + pct + '%"></i></span>' + pct + '%');
-    if(i % 4 === 0) await new Promise(r=>setTimeout(r,0));
   }
   await output.finalize();
   const blob = new Blob([output.target.buffer], {type:'video/mp4'});
@@ -5001,27 +5037,34 @@ async function drawPreviewSegment(ctx, seg, t, W, H){
     return false;
   }
 }
-async function prewarmExportMedia(seq, tIn, tOut){
-  // заранее загружаем все видео- и аудиофайлы диапазона —
-  // покадровый проход становится строго детерминированным (без ожиданий)
+async function prewarmExportMedia(seq, tIn, tOut, nSlots){
+  nSlots = Math.max(1, nSlots || 1);
   const vCache = new Map();
+  const fileIds = [];
   for(const tr of seq.videoTracks.concat(seq.scratchV || [])){
     for(const c of tr.clips){
       if(c.end <= tIn || c.start >= tOut || !c.fileId) continue;
-      if(vCache.has(c.fileId)) continue;
+      if(fileIds.indexOf(c.fileId) >= 0) continue;
       const med = state.media.get(c.fileId);
-      if(!med || (med.f.type||'').startsWith('image/')) continue;
+      if(!med || (med.f && (med.f.type||'').startsWith('image/'))) continue;
+      fileIds.push(c.fileId);
+    }
+  }
+  for(const fileId of fileIds){
+    const med = state.media.get(fileId);
+    if(!med) continue;
+    const srcUrl = med.url;
+    for(let sl = 0; sl < nSlots; sl++){
       const v = document.createElement('video');
-      v.muted = true; v.preload = 'auto'; v.src = med.url;
-      vCache.set(c.fileId, v);
+      v.muted = true; v.preload = 'auto'; v.playsInline = true; v.src = srcUrl;
+      vCache.set('vid:' + fileId + ':' + srcUrl + ':' + sl, v);
     }
   }
-  for(const v of vCache.values()){
-    if(v.readyState < 2){
-      await new Promise(res => { v.onloadedmetadata = res; v.onerror = res; setTimeout(res, 1500); });
-      if(v.readyState < 2){ try{ v.load(); }catch(e){} }
-    }
-  }
+  const vids = [...vCache.values()];
+  await Promise.all(vids.map(v => new Promise(res => {
+    if(v.readyState >= 2){ res(); return; }
+    v.onloadedmetadata = res; v.onerror = res; setTimeout(res, 2000);
+  })));
   return vCache;
 }
 
@@ -5095,19 +5138,25 @@ async function muxCanvasBlockToMp4(p){
 async function exportViaJpegCache(p){
   // Покадровый: JPEG только во внутреннем кэше блока (~400 кадров), потом сразу
   // в ОДИН MP4. На диск уходит один длинный файл. В меню — какой блок сейчас.
-  const JPEG_BLOCK_FRAMES = 400;
   const {seq, tIn, tOut, dur, fps, totalFrames, bitrate, W, H, audioCodec} = p;
+  const JPEG_BLOCK_FRAMES = Math.max(1, Math.round(fps || 25)); // 1 секунда = fps кадров
+  const nPar = Math.min(JPEG_BLOCK_FRAMES, 32);
   const startedAt = performance.now();
   let cache = new Map();
   try{
-    $('stRender').textContent = '🎬 Подготовка медиа…';
-    cache = await prewarmExportMedia(seq, tIn, tOut);
+    $('stRender').textContent = '🎬 Подготовка медиа ×' + nPar + '…';
+    cache = await prewarmExportMedia(seq, tIn, tOut, nPar);
   }catch(e){}
-  const canvas = document.createElement('canvas');
-  canvas.width = W; canvas.height = H;
-  const ctx = canvas.getContext('2d');
   const frameDur = 1 / fps;
   const nBlocks = Math.max(1, Math.ceil(totalFrames / JPEG_BLOCK_FRAMES));
+  const canvases = [];
+  const ctxs = [];
+  for(let sl = 0; sl < nPar; sl++){
+    const cnv = document.createElement('canvas');
+    cnv.width = W; cnv.height = H;
+    canvases.push(cnv);
+    ctxs.push(cnv.getContext('2d', {willReadFrequently: false}));
+  }
 
   $('stRender').textContent = '🎬 Микширование звука…';
   const mix = await mixAudioRange(seq, tIn, tOut);
@@ -5134,12 +5183,6 @@ async function exportViaJpegCache(p){
     output.addAudioTrack(audioSource);
   }
   await output.start();
-  if(hasAudio){
-    const ab = new AudioBuffer({length: mix.frames, sampleRate: 48000, numberOfChannels: 2});
-    ab.copyToChannel(mix.ch0, 0);
-    ab.copyToChannel(mix.ch1, 1);
-    await audioSource.add(ab);
-  }
 
   let framesOut = 0;
   let aborted = false;
@@ -5147,33 +5190,34 @@ async function exportViaJpegCache(p){
     if(state.renderAbort){ aborted = true; break; }
     const i0 = b * JPEG_BLOCK_FRAMES;
     const i1 = Math.min(totalFrames, i0 + JPEG_BLOCK_FRAMES);
-    const jpgs = [];
-    state.jpegFrameCache = jpgs;
-    for(let i = i0; i < i1; i++){
+    const count = i1 - i0;
+    $('stRender').textContent = '🎬 Покадровый · 1с · ' + count + ' кадров параллельно · блок ' +
+      (b + 1) + '/' + nBlocks;
+    const bitmaps = new Array(count);
+    for(let wave = 0; wave < count; wave += nPar){
       if(state.renderAbort){ aborted = true; break; }
-      const t = tIn + i * frameDur;
-      await drawFrame(ctx, t, seq, cache, W, H);
-      updateExportPreview(canvas);
-      jpgs.push(await canvasToJpegBlob(canvas, 0.95));
-      $('stRender').textContent = '🎬 Покадровый экспорт · блок ' + (b + 1) + '/' + nBlocks +
-        ' · JPEG ' + (i - i0 + 1) + '/' + (i1 - i0);
-      updateExportProgress(i + 1, totalFrames, tIn, t, startedAt);
-      if((i - i0) % 3 === 0) await new Promise(r => setTimeout(r, 0));
+      const chunk = Math.min(nPar, count - wave);
+      const part = await Promise.all(Array.from({length: chunk}, (_, sl) => (async () => {
+        if(state.renderAbort) return null;
+        const t = tIn + (i0 + wave + sl) * frameDur;
+        await drawFrame(ctxs[sl], t, seq, cache, W, H, {exportSlot: sl});
+        try{ return await createImageBitmap(canvases[sl]); }catch(e){ return null; }
+      })()));
+      for(let sl = 0; sl < part.length; sl++) bitmaps[wave + sl] = part[sl];
     }
-    $('stRender').textContent = '🎬 Покадровый экспорт · блок ' + (b + 1) + '/' + nBlocks + ' · пишу в MP4…';
-    for(let j = 0; j < jpgs.length; j++){
+    if(state.renderAbort) aborted = true;
+    for(let k = 0; k < count; k++){
       if(state.renderAbort){ aborted = true; break; }
-      const bmp = await createImageBitmap(jpgs[j]);
-      encCtx.clearRect(0, 0, W, H);
+      const bmp = bitmaps[k];
+      if(!bmp) continue;
       encCtx.drawImage(bmp, 0, 0, W, H);
       try{ bmp.close(); }catch(e){}
       updateExportPreview(encCanvas);
-      await videoSource.add((i0 + j) * frameDur, frameDur);
+      await videoSource.add((i0 + k) * frameDur, frameDur);
       framesOut++;
-      if(j % 3 === 0) await new Promise(r => setTimeout(r, 0));
     }
-    jpgs.length = 0;
-    state.jpegFrameCache = [];
+    updateExportProgress(Math.min(i1, totalFrames), totalFrames, tIn, tIn + (i1 - 1) * frameDur, startedAt);
+    await new Promise(r => setTimeout(r, 0));
     if(aborted || state.renderAbort){ aborted = true; break; }
   }
   state.jpegFrameCache = [];
@@ -5188,8 +5232,26 @@ async function exportViaJpegCache(p){
     toast('Экспорт остановлен — файла нет', 'warn');
     return;
   }
-  await output.finalize();
-  const buf = output.target.buffer;
+  // звук режем по уже посчитанным кадрам — иначе finalize падает (полный микс vs короткий ролик)
+  if(hasAudio && audioSource && mix){
+    try{
+      const n = Math.max(1, Math.min(mix.frames, Math.round(framesOut / fps * 48000)));
+      const ab = new AudioBuffer({length: n, sampleRate: 48000, numberOfChannels: 2});
+      ab.copyToChannel(mix.ch0.subarray(0, n), 0);
+      ab.copyToChannel(mix.ch1.subarray(0, n), 1);
+      await audioSource.add(ab);
+    }catch(e){ console.error('partial audio', e); }
+  }
+  let buf = null;
+  try{ await output.finalize(); buf = output.target && output.target.buffer; }
+  catch(e){
+    console.error('jpeg finalize', e);
+    buf = output.target && output.target.buffer;
+  }
+  if(!buf || !buf.byteLength){
+    toast('Экспорт остановлен — муксер не отдал файл', 'err');
+    return;
+  }
   const blob = new Blob([buf], {type: 'video/mp4'});
   downloadBlobFile(blob, exportDownloadName(seq, aborted ? '_partial' : ''));
   $('exportDlg').classList.remove('open');
@@ -5197,7 +5259,7 @@ async function exportViaJpegCache(p){
   toast((aborted ? 'Экспорт остановлен — сохранён ролик до стопа: ' : 'Экспортировано покадрово: ') +
     exportDownloadName(seq, aborted ? '_partial' : '') + ' · ' + (blob.size/1048576).toFixed(1) + ' МБ · ' +
     fmtDur(gotDur) + (hasAudio ? ' · со звуком' : ' · без звука') +
-    (nBlocks > 1 ? ' · внутри ' + nBlocks + ' блоков по ' + JPEG_BLOCK_FRAMES + ' кадров' : ''),
+    (nBlocks > 1 ? ' · ' + nBlocks + ' сек. блоков ×' + nPar + ' параллельно' : ''),
     aborted ? 'warn' : '');
 }
 
@@ -9455,6 +9517,10 @@ function cloneClipForDrag(c){
   // сдвигал ключи также у исходного клипа. Теперь дубликат получает независимую копию.
   if(c.motion) n.motion = structuredClone(c.motion);
   if(c.audioAuto) n.audioAuto = structuredClone(c.audioAuto);
+  // фейды клонируем отдельно, потом снимаем ТОЛЬКО с копии — иначе {...c} делит объект с оригиналом
+  if(c.xfade) n.xfade = structuredClone(c.xfade);
+  if(c.xfadeIn) n.xfadeIn = structuredClone(c.xfadeIn);
+  if(c.xfadeOut) n.xfadeOut = structuredClone(c.xfadeOut);
   stripClipFades(n);
   return n;
 }
@@ -13155,7 +13221,7 @@ function applyLang(){
   for(const pair of TR_TEXT){ const el = $(pair[0]); if(el) el.textContent = t(pair[1]); }
   for(const pair of TR_TITLE){ const el = $(pair[0]); if(el) el.title = t(pair[1]); }
   const ep = $('emptyP'); if(ep) ep.innerHTML = t('empty_p');
-  const av = $('appVer'); if(av) av.innerHTML = t('app_ver') + ' <b>v4.87</b>';
+  const av = $('appVer'); if(av) av.innerHTML = t('app_ver') + ' <b>v4.93</b>';
   for(const id of ['lblVideo','lblAudio']) { const el = $(id); if(el) el.textContent = t(id === 'lblVideo' ? 'lbl_video' : 'lbl_audio'); }
   for(const pr of [['expTitleTxt','exp_title'],['lblRes','lbl_res'],['lblBr','lbl_br'],['lblRange','lbl_range'],['lblCodec','lbl_codec'],
                    ['lblStop','lbl_stop'],['lblStartExp','lbl_start_exp'],['lblCancel','lbl_cancel'],
@@ -13167,7 +13233,7 @@ function applyLang(){
     const el = $(pr[0]); if(el) el.innerHTML = t(pr[1]); // ссылки сохраняются в переводах
   }
   const nsPh = $('nsName'); if(nsPh) nsPh.placeholder = t('ns_ph');
-  const bs = $('brandSub'); if(bs) bs.textContent = 'v4.87 — ' + t('brand_sub');
+  const bs = $('brandSub'); if(bs) bs.textContent = 'v4.93 — ' + t('brand_sub');
   const lw = $('lbWheelHint'); if(lw) lw.textContent = t('wheel_hint');
   const rh = $('restHint'); if(rh) rh.textContent = t('rest_phrase');
   updateStatus();
@@ -13217,10 +13283,10 @@ const HELP_KEY_ITEMS = [
    ru:['<b>X</b> — метки по верхнему клипу под плейхедом','<b>CTRL+X</b> — вырезать выделенные клипы в буфер','<b>SHIFT+X</b> — удалить выделенное или диапазон меток со сдвигом (ripple)','<b>ALT+X</b> — вырезать диапазон в буфер (на месте пустота)'],
    en:['<b>X</b> — marks of the top clip under the playhead','<b>CTRL+X</b> — cut selected clips to the buffer','<b>SHIFT+X</b> — ripple-delete selection or the mark range','<b>ALT+X</b> — cut the range to the buffer (a hole is left in place)']},
   {keys:['I','E'], color:'#eda63b',
-   ru:['<b>I</b> или <b>E</b> — метка Входа; <b>SHIFT</b> — магнит к ближайшему стыку'],
+   ru:['<b>I</b> или <b>E</b> — метка Входа (если нет Выхода — он ставится в конец линейки); <b>SHIFT</b> — магнит к стыку'],
    en:['<b>I</b> or <b>E</b> — In mark; <b>SHIFT</b> — snap to the nearest cut']},
   {keys:['O','R'], color:'#eda63b',
-   ru:['<b>O</b> или <b>R</b> — метка Выхода; <b>SHIFT</b> — магнит к ближайшему стыку'],
+   ru:['<b>O</b> или <b>R</b> — метка Выхода (если нет Входа — он ставится в начало линейки); <b>SHIFT</b> — магнит к стыку'],
    en:['<b>O</b> or <b>R</b> — Out mark; <b>SHIFT</b> — snap to the nearest cut']},
   {keys:['D'], color:'#e384e3',
    ru:['<b>D</b> — снять метки I/O (на таймлайне и в окне просмотра)'],
@@ -14134,5 +14200,5 @@ try{
 
 updatePlayhead();
 </script>
-<script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a31c94f709810b98',t:'MTc4Nzg0OTQ5Ng=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+<script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a31cfb26cbad512f',t:'MTc4Nzg1MzY4MQ=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
