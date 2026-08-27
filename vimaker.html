@@ -154,15 +154,14 @@ input[type=range]{accent-color:var(--accent)}
 
 /* ============ CENTER (monitor + timeline) ============ */
 #center{flex:1 1 auto; display:flex; flex-direction:column; min-width:0; min-height:0}
-#monitorWrap{flex:1 1 40%; min-height:120px; display:flex; flex-direction:column; background:#000; position:relative}
+#monitorWrap{flex:1 1 40%; min-height:120px; display:flex; flex-direction:column; background:#3b3b43; position:relative}
 #monitor{flex:1; position:relative; display:flex; align-items:center; justify-content:center; overflow:hidden; background:#3b3b43}
 /* окно просмотра в режиме буфера (Alt+X / Alt+C) светится жёлтой рамкой, как в Avid */
 #monitor.avbuf{box-shadow:0 0 0 3px #ffd54d, 0 0 30px 8px rgba(255,213,77,.30)}
 #srcBar.avbuf{background:rgba(255,213,77,.10)}
 #srcBar.avbuf .srcname{color:#ffd54d}
 #monitor video,#monitor img.mon-img,#monitor canvas.mon-canvas{max-width:100%; max-height:100%; width:100%; height:100%; object-fit:contain}
-#monitor video,#monitor img.mon-img{background:#000}
-#monitor canvas.mon-canvas{background:transparent}
+#monitor video,#monitor img.mon-img,#monitor canvas.mon-canvas{background:#3b3b43}
 /* параметры секвенции — еле заметно, слева снизу у самого края */
 #monInfo{
   position:absolute; left:6px; bottom:4px; z-index:7; pointer-events:none;
@@ -251,8 +250,8 @@ input[type=range]{accent-color:var(--accent)}
 .tlTrackRow.audio .tlContent{height:34px; background:rgba(255,255,255,.01)}
 .tlTrackRow.audio .tlHCell{font-weight:600}
 .clipBlock{
-  position:absolute; top:2px; bottom:2px; border-radius:4px; overflow:hidden; cursor:pointer;
-  border:1px solid rgba(0,0,0,.45); box-shadow:inset 0 1px 0 rgba(255,255,255,.08);
+  position:absolute; top:2px; bottom:2px; border-radius:0; overflow:hidden; cursor:pointer;
+  border:1px solid #050506; box-shadow:inset 0 1px 0 rgba(255,255,255,.06);
   display:flex; align-items:center;
 }
 .tlTrackRow.audio .clipBlock{top:3px; bottom:3px}
@@ -278,7 +277,7 @@ input[type=range]{accent-color:var(--accent)}
 .clipBlock.selected{outline:2px solid var(--accent); outline-offset:-2px; z-index:3}
 .clipBlock .dupStripe{
   position:absolute; left:0; right:0; top:0; height:4px; z-index:4;
-  border-radius:4px 4px 0 0; box-shadow:0 0 5px rgba(0,0,0,.4);
+  border-radius:0; box-shadow:0 0 5px rgba(0,0,0,.4);
 }
 /* жёлтые рамки-ручки обрезки по краям клипа (двойной клик включает режим) */
 .clipBlock .trimHandle{
@@ -286,10 +285,42 @@ input[type=range]{accent-color:var(--accent)}
   background:rgba(255,216,77,.85); border:1.5px solid #ffd849;
   box-shadow:0 0 8px rgba(255,216,77,.8), inset 0 0 6px rgba(255,244,180,.8);
 }
-.clipBlock .trimHandle.left{left:-3px; border-radius:4px 0 0 4px}
-.clipBlock .trimHandle.right{right:-3px; border-radius:0 4px 4px 0}
+.clipBlock .trimHandle.left{left:-3px; border-radius:0}
+.clipBlock .trimHandle.right{right:-3px; border-radius:0}
 .clipBlock .trimHandle:hover{background:#ffd849}
 .clipBlock.trim-mode{outline:2px solid rgba(255,216,77,.9); outline-offset:-2px; z-index:8}
+.clipBlock.trim-ripple{outline:2px solid #4aa3ff; outline-offset:-2px; z-index:8}
+.clipBlock.trim-ripple .trimHandle{
+  background:rgba(80,170,255,.92); border:1.5px solid #5eb0ff;
+  box-shadow:0 0 8px rgba(80,170,255,.85), inset 0 0 6px rgba(180,220,255,.8);
+}
+.clipBlock.trim-ripple .trimHandle:hover{background:#7ec8ff}
+.joinGlow{
+  position:absolute; top:0; bottom:0; width:2px; margin-left:-1px; z-index:8;
+  background:#0a0a0c; cursor:pointer; pointer-events:auto;
+  box-shadow:none;
+}
+.joinGlow:hover{background:#1a1a1e; width:3px}
+.joinGlow.on{
+  width:3px; background:#5ec8ff;
+  box-shadow:0 0 8px 3px rgba(80,200,255,.95), 0 0 20px 8px rgba(40,150,255,.55);
+}
+.xfadeBand{
+  position:absolute; top:2px; bottom:2px; z-index:12; cursor:pointer;
+  background:rgba(255,255,255,.22); border:1px solid rgba(255,255,255,.45);
+  box-shadow:inset 0 0 12px rgba(255,255,255,.12);
+}
+.xfadeBand.video{background:rgba(160,200,255,.28); border-color:rgba(180,210,255,.55)}
+.xfadeBand.audio{background:rgba(255,200,80,.26); border-color:rgba(255,220,120,.5)}
+.xfadeBand.selected{outline:2px solid #7ecbff; outline-offset:-2px; z-index:13}
+.xfadeBand.trim{
+  outline:3px solid #ffd849; outline-offset:-1px; z-index:14;
+  box-shadow:inset 0 0 0 1px #ffd849, 0 0 14px rgba(255,216,77,.85);
+}
+.xfadeBand .xfh{position:absolute; top:-2px; bottom:-2px; width:10px; background:rgba(255,216,77,.92); border:2px solid #ffd849; cursor:ew-resize; display:none; z-index:15; box-shadow:0 0 10px rgba(255,216,77,.95)}
+.xfadeBand.trim .xfh{display:block}
+.xfadeBand.trim .xfh:hover{background:#ffe98a}
+.xfadeBand .xfh.l{left:0} .xfadeBand .xfh.r{right:0}
 
 /* полоска повтора кадров — только на пересекающихся участках */
 .clipBlock .srcDupStripe{
@@ -422,14 +453,13 @@ input[type=range]{accent-color:var(--accent)}
 /* ============ РАЗДЕЛИТЕЛЬ ВИДЕО/АУДИО ============ */
 #trackDivider{
   position:absolute; left:0; right:0; height:8px; z-index:6; cursor:row-resize;
-  background:#c8c8ce;
-  border-top:1px solid #ececf2; border-bottom:1px solid #8e8e96;
-  box-shadow:0 0 0 1px rgba(0,0,0,.28);
+  background:#4a4a54;
+  border-top:1px solid #5c5c68; border-bottom:1px solid #383840;
 }
 #trackDivider .handle{
   position:absolute; left:50%; top:50%; transform:translate(-50%,-50%);
-  background:#d8d8de; border:1px solid #f2f2f6; border-radius:6px;
-  padding:0 8px; font-size:8.5px; line-height:12px; color:#222; letter-spacing:.4px; pointer-events:none; font-weight:700;
+  background:#52525c; border:1px solid #6a6a74; border-radius:6px;
+  padding:0 8px; font-size:8.5px; line-height:12px; color:#c8c8d0; letter-spacing:.4px; pointer-events:none; font-weight:700;
 }
 
 /* ============ EMPTY / DROP STATES ============ */
@@ -845,7 +875,7 @@ input[type=range]{accent-color:var(--accent)}
   flex:0 0 auto!important; margin:0!important; border:0!important;
   box-shadow:0 0 0 9999px rgba(0,0,0,.72); background:var(--panel)!important;
 }
-#monitorWrap.fs-active-panel{background:#000!important}
+#monitorWrap.fs-active-panel{background:#3b3b43!important}
 #timelineWrap.fs-active-panel{display:flex!important; flex-direction:column!important}
 #left.fs-active-panel{display:flex!important; flex-direction:column!important}
 .fs-close-btn{
@@ -856,7 +886,7 @@ input[type=range]{accent-color:var(--accent)}
   box-shadow:0 6px 18px rgba(0,0,0,.55);
 }
 .fs-close-btn:hover{background:#d32f2f}
-/* ===== v4.71 ===== */
+/* ===== v4.87 ===== */
 .clipBlock .cname{ opacity:.5; }
 #tlInner.tool-tsf .tlTrackRow, #tlInner.tool-tsf .tlContent{ cursor:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='26' height='26' viewBox='0 0 26 26'><path d='M3 7h16m0 0-5-4.5m5 4.5-5 4.5' stroke='white' stroke-width='2.4' fill='none' stroke-linecap='round' stroke-linejoin='round'/><path d='M3 19h16m0 0-5-4.5m5 4.5-5 4.5' stroke='white' stroke-width='2.4' fill='none' stroke-linecap='round' stroke-linejoin='round'/></svg>") 13 13, pointer; }
 #tlInner.tool-tsb .tlTrackRow, #tlInner.tool-tsb .tlContent{ cursor:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='26' height='26' viewBox='0 0 26 26'><path d='M23 7H7m0 0 5-4.5M7 7l5 4.5' stroke='white' stroke-width='2.4' fill='none' stroke-linecap='round' stroke-linejoin='round'/><path d='M23 19H7m0 0 5-4.5M7 19l5 4.5' stroke='white' stroke-width='2.4' fill='none' stroke-linecap='round' stroke-linejoin='round'/></svg>") 13 13, pointer; }
@@ -930,7 +960,7 @@ input[type=range]{accent-color:var(--accent)}
 <body>
 
 <header id="topbar">
-  <div class="brand"><span class="logo">▶</span> Vimaker <span class="sub" id="brandSub">v4.71 — online видео редактор, аналог Adobe Premiere, DaVinci</span> <a class="author" href="https://t.me/psihoboom" target="_blank" rel="noopener" title="Телеграм автора">Автор: AMPIRION</a> <a class="farm" id="brandFarm" href="https://ampirion.github.io/videoferma/" target="_blank" rel="noopener" title="Видеоферма">Видеоферма</a></div>
+  <div class="brand"><span class="logo">▶</span> Vimaker <span class="sub" id="brandSub">v4.87 — online видео редактор, аналог Adobe Premiere, DaVinci</span> <a class="author" href="https://t.me/psihoboom" target="_blank" rel="noopener" title="Телеграм автора">Автор: AMPIRION</a> <a class="farm" id="brandFarm" href="https://ampirion.github.io/videoferma/" target="_blank" rel="noopener" title="Видеоферма">Видеоферма</a></div>
   <div class="sep"></div>
   <div class="sep"></div>
   <button id="btnExportMp4" class="tbtn primary" title="Экспорт видео: битрейт, разрешение, диапазон по меткам I/O">🎬 MP4</button>
@@ -970,6 +1000,7 @@ input[type=range]{accent-color:var(--accent)}
     <div id="monitorWrap">
       <div id="monitor">
         <video id="previewVideo" playsinline></video>
+        <video id="previewVideoB" playsinline style="display:none"></video>
         <img id="previewImage" class="mon-img" style="display:none" alt="">
         <canvas id="monitorCanvas" class="mon-canvas" style="display:none"></canvas>
         <video id="sourceVideo" playsinline style="display:none"></video>
@@ -1187,7 +1218,7 @@ input[type=range]{accent-color:var(--accent)}
     <button class="tbtn primary" id="btnOpenXml2" style="font-size:13.5px;padding:9px 18px">📄 Выбрать XML-файл…</button>
     <button class="tbtn" id="btnDemo" style="font-size:13.5px;padding:9px 18px;margin-left:8px">✨ Открыть демо-проект</button>
     <p id="emptyDrop" style="margin-top:18px; color:var(--dimmer); font-size:12px">Можно просто перетащить файл XML в окно браузера</p>
-    <p class="verline" id="appVer">Версия приложения: <b>v4.71</b></p>
+    <p class="verline" id="appVer">Версия приложения: <b>v4.87</b></p>
   </div>
 </div>
 
@@ -1560,6 +1591,16 @@ function clipColor(name, label){
   if(state.nameColors && state.nameColors.has(name)) return state.nameColors.get(name);
   // 3) запасной вариант (имя появилось после назначения палитры)
   return hslToHex(hashNum(String(name||'x')) % 360, 62, 46);
+}
+function darkenHex(hex, amt){
+  const h = String(hex || '#666666');
+  const m = h.match(/#?([0-9a-f]{6})/i);
+  if(!m) return hex;
+  const n = parseInt(m[1], 16);
+  let r = (n >> 16) & 255, g = (n >> 8) & 255, b = n & 255;
+  const k = Math.max(0, Math.min(1, 1 - (amt || 0)));
+  r = Math.round(r * k); g = Math.round(g * k); b = Math.round(b * k);
+  return '#' + [r,g,b].map(x => x.toString(16).padStart(2, '0')).join('');
 }
 /* Цвет полоски пары дубликатов (у каждой пары свой) */
 const DUP_PALETTE = ['#e4572e','#4f9d69','#3b6ea5','#a35cb8','#c7a020','#2aa9a9','#d0487c','#7c8a3a','#5b6bd6','#c96f1d','#4aa3c2','#a0483f'];
@@ -2250,6 +2291,7 @@ const state = {
   gapSel: null,       // выделенная пустая область {track, t0, t1} — DEL схлопывает
   lastSource: null,   // последний клип, открытый в окне просмотра (для вставки с таймлайна)
   trimUid: null,      // клип в режиме обрезки (жёлтые рамки по краям)
+  trimRipple: false,  // SHIFT+двойной клик — синие рамки, обрезка со сдвигом
   trimDrag: null,     // активное перетаскивание ручки обрезки
   autoCut: {          // автомонтаж — автонарезка камер
     open: false, running: false, stop: false,
@@ -2458,7 +2500,7 @@ function topClipAt(t){
     if(tr.disabled) continue; // дорожка выключена — видео не показывается
     for(const c of tr.clips){
       if(c.deleted) continue; // удалённый клип — пустота
-      if(t >= c.start - 1e-9 && t < c.end - 1e-9) return {clip: c, track: tr};
+      if(clipCoversTime(c, t)) return {clip: c, track: tr};
     }
   }
   return null;
@@ -3005,7 +3047,42 @@ function dupClip(c, extra){
   const n = Object.assign({}, c, extra || {});
   if(c && c.motion) n.motion = structuredClone(c.motion);
   if(c && c.audioAuto) n.audioAuto = structuredClone(c.audioAuto);
+  n.xfade = (extra && extra.xfade !== undefined) ? extra.xfade : (c && c.xfade ? structuredClone(c.xfade) : n.xfade);
+  n.xfadeIn = (extra && extra.xfadeIn !== undefined) ? extra.xfadeIn : (c && c.xfadeIn ? structuredClone(c.xfadeIn) : n.xfadeIn);
+  n.xfadeOut = (extra && extra.xfadeOut !== undefined) ? extra.xfadeOut : (c && c.xfadeOut ? structuredClone(c.xfadeOut) : n.xfadeOut);
   return n;
+}
+function clampFadeDur(clip){
+  if(!clip) return;
+  const cap = Math.max(0.15, clip.durSec - 1e-3);
+  eachFade(clip, fd => { if(fd && fd.dur > cap) fd.dur = cap; });
+}
+function stripClipFades(clip){
+  if(!clip) return;
+  const inn = fadeSlot(clip, 'in'), out = fadeSlot(clip, 'out');
+  const saved = (out && out.saved) || (inn && inn.saved);
+  if(saved && saved.durSec > 1e-4 && saved.end > saved.start + 1e-4){
+    clip.durSec = saved.durSec;
+    clip.end = clip.start + saved.durSec;
+    clip.srcIn = saved.srcIn; clip.srcOut = saved.srcOut;
+    clip.freezeIn = saved.freezeIn || 0; clip.freezeOut = saved.freezeOut || 0;
+  }
+  try{ clearFadeKeys(clip, 'in'); clearFadeKeys(clip, 'out'); }catch(e){}
+  clip.xfade = null; clip.xfadeIn = null; clip.xfadeOut = null;
+}
+function splitFadesAfterCut(left, right){
+  // левая половина — только вход (если был у исходника), правая — только выход.
+  // иначе фейд копируется на новый стык и выглядит как «автофейд на разрезе».
+  if(left){
+    left.xfadeOut = null;
+    if(left.xfade && left.xfade.role === 'out') left.xfade = null;
+    clampFadeDur(left);
+  }
+  if(right){
+    right.xfadeIn = null;
+    if(right.xfade && right.xfade.role === 'in') right.xfade = null;
+    clampFadeDur(right);
+  }
 }
 /* Сдвиг клипа по линейке вместе с ключами (ключи живут во времени линейки). */
 function shiftClipPlacement(clip, dt){
@@ -3052,6 +3129,7 @@ function renderClipKeyframes(div, clip, track){
   const names = {scale:'Ключ масштаба', opacity:'Ключ альфы', gainDb:'Ключ громкости', pan:'Ключ баланса'};
   for(const k of bag.keyframes){
     if(k.t == null || k.t < clip.start - 1e-6 || k.t > clip.end + 1e-6) continue;
+    if(k.fade) continue;
     for(const prop of props){
       if(k[prop] == null) continue;
       const d = document.createElement('div');
@@ -3191,6 +3269,139 @@ function buildTimeline(){
     content.style.height = trackH(track) + 'px';
     for(const clip of track.clips){
       content.appendChild(clipBlockEl(clip, track, seq, srcDupMap));
+    }
+    const liveClips = track.clips.filter(c => !c.deleted).slice().sort((a,b) => a.start - b.start);
+    for(let ji = 0; ji < liveClips.length; ji++){
+      const jc = liveClips[ji], jp = liveClips[ji-1], jn = liveClips[ji+1];
+      const abutP = jp && Math.abs(jp.end - jc.start) < 0.08;
+      const abutN = jn && Math.abs(jc.end - jn.start) < 0.08;
+      const addGlow = (tJoin, leftC, rightC) => {
+        const g = document.createElement('div');
+        const on = state.joinSel && state.joinSel.track === track && Math.abs((state.joinSel.t || 0) - tJoin) < 0.05;
+        g.className = 'joinGlow' + (on ? ' on' : '');
+        g.style.left = (tJoin * state.ppx) + 'px';
+        g.title = (leftC && rightC) ? 'Стык клипов' : (rightC ? 'Начало — фейд из чёрного' : 'Конец — фейд в чёрное');
+        g.addEventListener('pointerdown', ev => {
+          ev.stopPropagation(); ev.preventDefault();
+          state.joinSel = {track, t: tJoin, left: leftC || null, right: rightC || null};
+          state.xfadeSel = null;
+          setSelection([]);
+          buildTimeline();
+        });
+        content.appendChild(g);
+      };
+      if(!abutP) addGlow(jc.start, null, jc);
+      if(abutN) addGlow(jc.end, jc, jn);
+      else addGlow(jc.end, jc, null);
+    }
+    const paintFadeBand = (leftC, rightC, fadeObj, trackRef, soloClip) => {
+      if(!fadeObj) return;
+      const dur = fadeObj.dur || XFADE_DEFAULT;
+      let t0, t1;
+      if(leftC && rightC && leftC !== rightC){
+        const cut = (fadeObj.cut != null) ? fadeObj.cut : (leftC.end + rightC.start) / 2;
+        t0 = cut - dur / 2;
+        t1 = cut + dur / 2;
+      } else if(soloClip){
+        if(fadeObj.role === 'in'){ t0 = soloClip.start; t1 = Math.min(soloClip.end, soloClip.start + dur); }
+        else { t1 = soloClip.end; t0 = Math.max(soloClip.start, soloClip.end - dur); }
+      } else return;
+      const band = document.createElement('div');
+      const pairLeft = leftC || soloClip, pairRight = rightC || soloClip;
+      const sel = state.xfadeSel && ((state.xfadeSel.left === pairLeft && state.xfadeSel.right === pairRight) || (state.xfadeSel.clip === soloClip && soloClip));
+      band.className = 'xfadeBand ' + (fadeObj.kind || trackRef.kind) + (sel ? ' selected' : '');
+      if(state.xfadeSel && state.xfadeSel.trim && sel) band.classList.add('trim');
+      band.style.left = (t0 * state.ppx) + 'px';
+      band.style.width = Math.max((t1 - t0) * state.ppx, 8) + 'px';
+      band.title = (fadeObj.kind === 'audio' ? 'Фейдер звука' : 'Переход видео') + ' · ' + fmtDur(dur) + ' · двойной клик — рамка и длина, DEL — удалить';
+      const selectBand = (trim) => {
+        state.xfadeSel = {left: pairLeft, right: pairRight, clip: soloClip || pairLeft, role: fadeObj.role, track: trackRef, trim: !!trim};
+        state.joinSel = null;
+        setSelection([]);
+        document.querySelectorAll('.xfadeBand.selected, .xfadeBand.trim').forEach(el => { el.classList.remove('selected'); el.classList.remove('trim'); });
+        band.classList.add('selected');
+        if(trim) band.classList.add('trim');
+      };
+      band.addEventListener('pointerdown', ev => {
+        ev.stopPropagation();
+        selectBand(!!(state.xfadeSel && state.xfadeSel.trim && state.xfadeSel.left === pairLeft && state.xfadeSel.right === pairRight));
+      });
+      band.addEventListener('dblclick', ev => {
+        ev.stopPropagation(); ev.preventDefault();
+        selectBand(true);
+      });
+      const mkH = (side) => {
+        const h = document.createElement('div');
+        h.className = 'xfh ' + side;
+        h.addEventListener('pointerdown', ev => {
+          ev.preventDefault(); ev.stopPropagation();
+          const startX = ev.clientX, startDur = fadeObj.dur;
+          const maxD = Math.max(0.2, Math.min(pairLeft.durSec, pairRight.durSec) - 0.05);
+          const move = e => {
+            const sign = side === 'r' ? 1 : -1;
+            const nd = clamp(startDur + sign * (e.clientX - startX) / state.ppx, 0.15, maxD);
+            fadeObj.dur = nd;
+            const fo = fadeSlot(pairLeft, 'out'); if(fo) fo.dur = nd;
+            const fi = fadeSlot(pairRight, 'in'); if(fi) fi.dur = nd;
+            if(pairLeft === pairRight){
+              const a = fadeObj.role === 'in' ? pairLeft.start : pairLeft.end - nd;
+              band.style.left = (a * state.ppx) + 'px';
+              band.style.width = Math.max(nd * state.ppx, 8) + 'px';
+            } else {
+              band.style.width = Math.max(nd * state.ppx, 8) + 'px';
+              band.style.left = ((pairRight.start) * state.ppx) + 'px';
+            }
+            updateMonitor();
+          };
+          const up = () => {
+            window.removeEventListener('pointermove', move);
+            invalidateClipPreviewCache(pairLeft);
+            if(pairRight !== pairLeft) invalidateClipPreviewCache(pairRight);
+            buildTimeline(); updateMonitor();
+          };
+          window.addEventListener('pointermove', move);
+          window.addEventListener('pointerup', up, {once:true});
+        });
+        band.appendChild(h);
+      };
+      mkH('l'); mkH('r');
+      content.appendChild(band);
+    };
+    const paintedPair = new Set();
+    for(const clip of track.clips){
+      if(clip.deleted) continue;
+      const fout = fadeSlot(clip, 'out');
+      if(fout && fout.partnerUid){
+        const partner = track.clips.find(c => c.uid === fout.partnerUid);
+        const pk = clip.uid + '>' + (partner ? partner.uid : '');
+        if(!paintedPair.has(pk)){
+          paintedPair.add(pk);
+          paintFadeBand(clip, partner || clip, fout, track, null);
+        }
+      } else if(fout && !fout.partnerUid){
+        paintFadeBand(clip, clip, fout, track, clip);
+      }
+      const fin = fadeSlot(clip, 'in');
+      if(fin && fin.partnerUid){
+        /* pair already painted from left.out */
+      } else if(fin){
+        const live = track.clips.filter(c => !c.deleted).slice().sort((a,b)=>a.start-b.start);
+        const ix = live.indexOf(clip);
+        const prev = ix > 0 ? live[ix-1] : null;
+        if(prev && Math.abs(prev.end - clip.start) < 0.08){
+          const cut = (prev.end + clip.start) / 2;
+          fin.partnerUid = prev.uid; fin.cut = cut;
+          if(!fadeSlot(prev, 'out')) setFadeSlot(prev, {role:'out', kind: fin.kind, dur: fin.dur, partnerUid: clip.uid, cut});
+          else { const fo = fadeSlot(prev,'out'); fo.partnerUid = clip.uid; if(fo.cut == null) fo.cut = cut; if(!fo.dur) fo.dur = fin.dur; }
+          const pk = prev.uid + '>' + clip.uid;
+          if(!paintedPair.has(pk)){
+            paintedPair.add(pk);
+            paintFadeBand(prev, clip, fin, track, null);
+          }
+        } else {
+          paintFadeBand(clip, clip, fin, track, clip);
+        }
+      }
     }
     // ручка: перетаскивание нижнего края заголовка меняет высоту ТОЛЬКО этой дорожки
     const rz = document.createElement('div');
@@ -3720,9 +3931,254 @@ function setAudioKey(clip, prop, value, t){
   k[prop] = value;
   m[prop] = value;
 }
+const XFADE_DEFAULT = 3;
+const XFADE_RESERVE = 3;
+function clipFileDur(clip){
+  const info = clip && (clip.file || (clip.fileId && state.model && state.model.files && state.model.files[clip.fileId]));
+  return (info && info.durSec > 0) ? info.durSec : Math.max(clip.srcOut || 0, 0);
+}
+function clipSourceTime(clip, t){
+  if(!clip) return 0;
+  const fps = (curSeq() && curSeq().fps) || 25;
+  const fin = clip.freezeIn || 0, fout = clip.freezeOut || 0;
+  const core = Math.max(1e-6, clip.durSec - fin - fout);
+  const local = t - clip.start;
+  const speed = core > 0 ? ((clip.srcOut - clip.srcIn) / core) : 1;
+  if(local < 0){
+    const src = clip.srcIn + local * speed;
+    return Math.max(0, src);
+  }
+  if(fin && local < fin) return clip.srcIn;
+  if(fout && local > clip.durSec - fout) return Math.max(clip.srcIn, (clip.srcOut || clip.srcIn) - 1 / fps);
+  if(local > clip.durSec){
+    return (clip.srcOut || clip.srcIn) + (local - clip.durSec) * speed;
+  }
+  return clip.srcIn + Math.max(0, local - fin) * speed;
+}
+function fadeSlot(clip, role){
+  if(!clip) return null;
+  if(role === 'in') return clip.xfadeIn || (clip.xfade && clip.xfade.role === 'in' ? clip.xfade : null);
+  return clip.xfadeOut || (clip.xfade && clip.xfade.role === 'out' ? clip.xfade : null);
+}
+function eachFade(clip, fn){
+  const a = fadeSlot(clip, 'in'); if(a) fn(a, 'in');
+  const b = fadeSlot(clip, 'out'); if(b) fn(b, 'out');
+}
+function clipHasFade(clip){ return !!(fadeSlot(clip,'in') || fadeSlot(clip,'out')); }
+function setFadeSlot(clip, obj){
+  if(!clip || !obj) return;
+  if(obj.role === 'in'){ clip.xfadeIn = obj; if(clip.xfade && clip.xfade.role === 'in') clip.xfade = null; }
+  else { clip.xfadeOut = obj; if(clip.xfade && clip.xfade.role === 'out') clip.xfade = null; }
+}
+function fadeCutOf(clip, fd, role){
+  if(fd && fd.cut != null && isFinite(fd.cut)) return fd.cut;
+  if(role === 'in') return clip.start;
+  return clip.end;
+}
+function clipCoversTime(c, t){
+  if(!c || c.deleted) return false;
+  if(t >= c.start - 1e-9 && t < c.end - 1e-9) return true;
+  const fin = fadeSlot(c, 'in');
+  const fout = fadeSlot(c, 'out');
+  if(fin && fin.dur > 0 && (fin.partnerUid || fin.cut != null)){
+    const cut = fadeCutOf(c, fin, 'in');
+    if(t >= cut - fin.dur / 2 - 1e-9 && t < cut + fin.dur / 2 - 1e-9) return true;
+  }
+  if(fout && fout.dur > 0 && (fout.partnerUid || fout.cut != null)){
+    const cut = fadeCutOf(c, fout, 'out');
+    if(t >= cut - fout.dur / 2 - 1e-9 && t < cut + fout.dur / 2 - 1e-9) return true;
+  }
+  return false;
+}
+function clipXfadeGain(clip, t){
+  if(!clip) return 1;
+  let g = 1;
+  const fin = fadeSlot(clip, 'in');
+  const fout = fadeSlot(clip, 'out');
+  if(fin && fin.dur > 0){
+    const paired = !!(fin.partnerUid || fin.cut != null);
+    if(paired){
+      const cut = fadeCutOf(clip, fin, 'in');
+      const a = cut - fin.dur / 2, b = cut + fin.dur / 2;
+      if(t <= a + 1e-9) g *= 0;
+      else if(t >= b - 1e-9) g *= 1;
+      else g *= easeLogCurve((t - a) / fin.dur);
+    } else {
+      const a = clip.start, b = clip.start + fin.dur;
+      if(t <= a + 1e-9) g *= 0;
+      else if(t < b - 1e-9) g *= easeLogCurve((t - a) / fin.dur);
+    }
+  }
+  if(fout && fout.dur > 0){
+    const paired = !!(fout.partnerUid || fout.cut != null);
+    if(paired){
+      const cut = fadeCutOf(clip, fout, 'out');
+      const a = cut - fout.dur / 2, b = cut + fout.dur / 2;
+      if(t <= a + 1e-9) g *= 1;
+      else if(t >= b - 1e-9) g *= 0;
+      else g *= 1 - easeLogCurve((t - a) / fout.dur);
+    } else {
+      const a = clip.end - fout.dur, b = clip.end;
+      if(t >= b - 1e-9) g *= 0;
+      else if(t > a + 1e-9) g *= 1 - easeLogCurve((t - a) / fout.dur);
+    }
+  }
+  return g;
+}
+function setFadeTaggedKey(clip, kind, prop, value, t, role){ /* фейд больше не пишет ключи анимации */ }
+function clearFadeKeys(clip, role){
+  if(!clip) return;
+  const drop = (arr) => {
+    if(!arr) return;
+    for(let i = arr.length - 1; i >= 0; i--){
+      const k = arr[i];
+      if(k && (k.fade === role || k.fade === true)){
+        delete k.opacity; delete k.gainDb; delete k.fade;
+        if(Object.keys(k).every(p => p === 't' || k[p] == null)) arr.splice(i, 1);
+      }
+    }
+  };
+  if(clip.motion) drop(clip.motion.keyframes);
+  if(clip.audioAuto) drop(clip.audioAuto.keyframes);
+}
+function syncFadeKeys(clip){ if(clip){ clearFadeKeys(clip, 'in'); clearFadeKeys(clip, 'out'); } }
+function findTrackJoin(track, kind){
+  const seq = curSeq();
+  if(!seq || !track || track.kind !== kind) return null;
+  const clips = track.clips.filter(c => !c.deleted).sort((a,b) => a.start - b.start);
+  const pack = (left, right, tJoin) => ({left: left || null, right: right || null, track, t: tJoin});
+  if(state.joinSel && state.joinSel.track === track){
+    const js = state.joinSel;
+    if(js.left || js.right) return pack(js.left, js.right, js.t);
+  }
+  const cands = [];
+  for(let i = 0; i < clips.length; i++){
+    const c = clips[i], prev = clips[i-1], next = clips[i+1];
+    const abutP = prev && Math.abs(prev.end - c.start) < 0.08;
+    const abutN = next && Math.abs(c.end - next.start) < 0.08;
+    if(abutP) cands.push(pack(prev, c, c.start));
+    else cands.push(pack(null, c, c.start));
+    if(abutN) cands.push(pack(c, next, c.end));
+    else cands.push(pack(c, null, c.end));
+  }
+  if(!cands.length) return null;
+  const near = (j) => Math.abs((j.t || 0) - state.t);
+  const group = selectedGroup().filter(g => g.track === track && g.clip && !g.clip.deleted);
+  if(group.length >= 2){
+    const a = group[0].clip, b = group[1].clip;
+    const left = a.start <= b.start ? a : b, right = a.start <= b.start ? b : a;
+    return pack(left, right, left.end);
+  }
+  const pairFirst = (arr) => {
+    const pairs = arr.filter(j => j.left && j.right);
+    const use = pairs.length ? pairs : arr;
+    use.sort((x,y) => near(x) - near(y));
+    return use[0] || null;
+  };
+  if(group.length === 1){
+    const c = group[0].clip;
+    const mine = cands.filter(j => j.left === c || j.right === c);
+    if(mine.length) return pairFirst(mine);
+  }
+  const best = pairFirst(cands);
+  if(best && near(best) < 0.8) return best;
+  return null;
+}
+function snapshotClipBounds(c){
+  return {start:c.start, end:c.end, durSec:c.durSec, srcIn:c.srcIn, srcOut:c.srcOut, freezeIn:c.freezeIn||0, freezeOut:c.freezeOut||0};
+}
+function restoreClipBounds(c, s){
+  if(!c || !s) return;
+  c.start = s.start; c.end = s.end; c.durSec = s.durSec; c.srcIn = s.srcIn; c.srcOut = s.srcOut;
+  c.freezeIn = s.freezeIn; c.freezeOut = s.freezeOut;
+}
+function applyJoinFade(kind){
+  const seq = curSeq();
+  if(!seq) return;
+  const group = selectedGroup();
+  let track = (state.joinSel && state.joinSel.track && state.joinSel.track.kind === kind) ? state.joinSel.track : (group.length ? group[0].track : null);
+  if(!track){
+    const d = displayTracks(seq);
+    const list = kind === 'audio' ? d.audio : d.video;
+    track = list.find(tr => findTrackJoin(tr, kind)) || null;
+  }
+  if(!track || track.kind !== kind){
+    toast(kind === 'audio' ? 'Выделите стык или край аудио-клипа (синий огонёк)' : 'Выделите стык или край видео-клипа (синий огонёк)', 'warn');
+    return;
+  }
+  const join = findTrackJoin(track, kind);
+  if(!join || (!join.left && !join.right)){ toast('Нет стыка у плейхеда — кликните край клипа', 'warn'); return; }
+  let left = join.left, right = join.right;
+  if(left && right){
+    if(fadeSlot(left, 'out') && fadeSlot(right, 'in')){ toast('На этом стыке уже есть переход', 'warn'); return; }
+  }
+  if(!(left && right)){
+    const solo = left || right;
+    const isIn = !!right;
+    const live = track.clips.filter(c => !c.deleted).slice().sort((a,b)=>a.start-b.start);
+    const ix = live.indexOf(solo);
+    if(isIn && ix > 0 && Math.abs(live[ix-1].end - solo.start) < 0.08) left = live[ix-1];
+    if(!isIn && ix >= 0 && ix < live.length-1 && Math.abs(solo.end - live[ix+1].start) < 0.08) right = live[ix+1];
+  }
+  if(!(left && right)){
+    const solo = left || right;
+    const isIn = !!right;
+    if(fadeSlot(solo, isIn ? 'in' : 'out')){ toast('На этом крае уже есть фейд', 'warn'); return; }
+    const beforeS = snapshotEdit();
+    const durS = Math.min(XFADE_DEFAULT, Math.max(0.2, solo.durSec * 0.45));
+    setFadeSlot(solo, {role: isIn ? 'in' : 'out', kind, dur: durS, partnerUid: null, solo: true});
+    clearFadeKeys(solo, isIn ? 'in' : 'out');
+    commitEdit(isIn ? 'Фейд-ин 3с' : 'Фейд-аут 3с', beforeS);
+    invalidateClipPreviewCache(solo);
+    state.xfadeSel = {left: solo, right: solo, track};
+    state.joinSel = {track, t: isIn ? solo.start : solo.end, left: isIn ? null : solo, right: isIn ? solo : null};
+    buildTimeline(); updateMonitor();
+    toast(kind === 'audio' ? (isIn ? 'Звук: фейд-ин на клипе' : 'Звук: фейд-аут на клипе') : (isIn ? 'Видео: появление (opacity 0→100, LOG)' : 'Видео: исчезновение (100→0, LOG)'), '');
+    return;
+  }
+  const before = snapshotEdit();
+  const dur = Math.min(XFADE_DEFAULT, Math.max(0.2, Math.min(left.durSec, right.durSec) * 0.45));
+  const cut = (left.end + right.start) / 2;
+  setFadeSlot(left, {role:'out', kind, dur, partnerUid: right.uid, cut});
+  setFadeSlot(right, {role:'in', kind, dur, partnerUid: left.uid, cut});
+  clearFadeKeys(left, 'out'); clearFadeKeys(right, 'in');
+  commitEdit(kind === 'audio' ? 'Аудио-фейдер 3с' : 'Видео-переход 3с', before);
+  invalidateClipPreviewCache(left); invalidateClipPreviewCache(right);
+  state.xfadeSel = {left, right, track};
+  buildTimeline(); updateMonitor();
+  toast(kind === 'audio' ? 'Фейдер звука 3 с' : 'Переход видео 3 с', '');
+}
+function removeJoinFade(left, right){
+  if(!left && !right) return;
+  const before = snapshotEdit();
+  const peel = (clip, role) => {
+    if(!clip) return;
+    const x = fadeSlot(clip, role);
+    if(!x) return;
+    clearFadeKeys(clip, role);
+    if(x.saved && x.saved.durSec > 1e-4 && Math.abs((x.saved.start||0) - clip.start) < 0.2){
+      restoreClipBounds(clip, x.saved);
+    }
+    if(role === 'in') clip.xfadeIn = null; else clip.xfadeOut = null;
+    if(clip.xfade && clip.xfade.role === role) clip.xfade = null;
+  };
+  if(left && right && left !== right){ peel(left, 'out'); peel(right, 'in'); }
+  else if(left && (!right || right === left)){
+    const role = (state.xfadeSel && state.xfadeSel.role) || (fadeSlot(left,'out') ? 'out' : 'in');
+    peel(left, role);
+  } else if(right){
+    peel(right, 'in');
+  }
+  commitEdit('Удаление перехода', before);
+  if(left) invalidateClipPreviewCache(left);
+  if(right) invalidateClipPreviewCache(right);
+  state.xfadeSel = null;
+  buildTimeline(); updateMonitor();
+  toast('Переход удалён', '');
+}
 function clipLiveAudioGain(clip, t){
   const base = clip.gain != null ? clip.gain : 1;
-  return Math.max(0, base * dbToLin(clipAudioValue(clip, 'gainDb', t)));
+  return Math.max(0, base * dbToLin(clipAudioValue(clip, 'gainDb', t)) * clipXfadeGain(clip, t));
 }
 function clipLivePan(clip, t){
   return clamp(clipAudioValue(clip, 'pan', t) / 100, -1, 1);
@@ -3736,7 +4192,7 @@ function drawCoverTransformed(ctx, src, w, h, clip, t){
   const s = Math.min(w / vw, h / vh) * (scalePct / 100);
   const dw = vw * s, dh = vh * s;
   ctx.save();
-  ctx.globalAlpha *= Math.max(0, Math.min(1, opacityPct / 100));
+  ctx.globalAlpha *= Math.max(0, Math.min(1, opacityPct / 100)) * clipXfadeGain(clip, t);
   ctx.drawImage(src, (w - dw) / 2, (h - dh) / 2, dw, dh);
   ctx.restore();
 }
@@ -3804,7 +4260,7 @@ async function drawClipFrameOnCanvas(ctx, clip, t, cache, w, h, opts){
   if(!med) return false;
   if(med.qtrle){
     const speed = clip.durSec > 0 ? ((clip.srcOut - clip.srcIn) / clip.durSec) : 1;
-    const srcT = clip.srcIn + (t - clip.start) * speed;
+    const srcT = clipSourceTime(clip, t);
     const frame = await qtrleFrameAt(med, srcT);
     if(frame){ drawCoverTransformed(ctx, frame, w, h, clip, t); return true; }
     return false;
@@ -3838,7 +4294,7 @@ async function drawClipFrameOnCanvas(ctx, clip, t, cache, w, h, opts){
   }
   if(v.videoWidth){
     const speed = clip.durSec > 0 ? ((clip.srcOut - clip.srcIn) / clip.durSec) : 1;
-    const srcT = clip.srcIn + (t - clip.start) * speed;
+    const srcT = clipSourceTime(clip, t);
     if(opts && opts.live && state.playing && state.playSpeed > 0){
       // Для просмотра в реальном времени не делаем seek каждый кадр — это и тормозило.
       // Видео-плеер сам декодирует поток, canvas только забирает текущий кадр.
@@ -3881,8 +4337,9 @@ function clipBlocksLowerLayers(clip, med, t){
   // чёрным, а не показывает нижний клип (как просил пользователь).
   if(!clip || !med) return false;
   if(med.hasAlpha) return false;
-  const opacity = clipMotionValue(clip, 'opacity', t);
-  return opacity >= 99.9;
+  if(clipHasFade(clip)) return false;
+  const opacity = (clipMotionValue(clip, 'opacity', t) / 100) * clipXfadeGain(clip, t);
+  return opacity >= 0.999;
 }
 function topVideoHitAt(seq, t){
   const d = displayTracks(seq);
@@ -3898,7 +4355,10 @@ function topVideoHitAt(seq, t){
 async function drawFrame(ctx, t, seq, cache, w, h, opts){
   const transparent = opts && opts.transparent;
   ctx.clearRect(0, 0, w, h);
-  if(!transparent){ ctx.fillStyle = '#000'; ctx.fillRect(0, 0, w, h); }
+  if(!transparent){
+    ctx.fillStyle = (opts && opts.live) ? '#3b3b43' : '#000';
+    ctx.fillRect(0, 0, w, h);
+  }
   // Оптимизация как в NLE: если верхний клип непрозрачный и полностью закрывает кадр,
   // нижние дорожки не декодируем вообще. При alpha/opacity<100/scale<cover они подключатся.
   const topHit = topVideoHitAt(seq, t);
@@ -3927,7 +4387,7 @@ async function drawFrame(ctx, t, seq, cache, w, h, opts){
     if(tr.disabled) continue;
     for(const c of tr.clips){
       if(c.deleted || c.kind === 'seq') continue;
-      if(t < c.start - 1e-9 || t >= c.end - 1e-9) continue;
+      if(!clipCoversTime(c, t)) continue;
       const med = c.fileId ? state.media.get(c.fileId) : null;
       if(med && med.hasAlpha && !any) paintChecker(ctx, w, h);
       if(med){
@@ -4095,7 +4555,20 @@ async function mixAudioRange(seq, tIn, tOut){
       const panN = oc.createStereoPanner ? oc.createStereoPanner() : null;
       const t0 = clipStart - tIn;
       const baseG = (c.gain != null ? c.gain : 1);
-      gn.gain.value = baseG * dbToLin(clipAudioValue(c, 'gainDb', clipStart));
+      gn.gain.value = baseG * dbToLin(clipAudioValue(c, 'gainDb', clipStart)) * clipXfadeGain(c, clipStart);
+      {
+        const step = 0.04;
+        let pt = -1;
+        for(let tt = clipStart; tt <= clipEnd + 1e-6; tt += step){
+          const g = baseG * dbToLin(clipAudioValue(c, 'gainDb', tt)) * clipXfadeGain(c, tt);
+          const at = Math.max(0, tt - tIn);
+          try{
+            if(pt < 0) gn.gain.setValueAtTime(g, at);
+            else gn.gain.linearRampToValueAtTime(g, at);
+          }catch(e){}
+          pt = at;
+        }
+      }
       if(c.audioAuto && c.audioAuto.keyframes && c.audioAuto.keyframes.length){
         const keys = c.audioAuto.keyframes.slice().sort((a,b)=>a.t-b.t);
         for(const k of keys){
@@ -5136,7 +5609,8 @@ function clipBlockEl(clip, track, seq, srcDupMap){
   div.dataset.clipUid = clip.uid;
   div.style.left = (clip.start * state.ppx) + 'px';
   div.style.width = Math.max(clip.durSec * state.ppx, 2) + 'px';
-  const color = clipColor(clip.name, clip.label);
+  let color = clipColor(clip.name, clip.label);
+  if(track && track.kind === 'audio') color = darkenHex(color, 0.28);
   if(clip.deleted){
     div.classList.add('deleted'); // серый блок — удалённый отрывок (пустота для экспорта)
     div.style.background = '';
@@ -5246,6 +5720,29 @@ function clipBlockEl(clip, track, seq, srcDupMap){
     if(ev.button !== 0) return; // средняя/правая кнопка — для пана и контекста
     ev.stopPropagation();
     ev.preventDefault();
+    const br = div.getBoundingClientRect();
+    const lx = ev.clientX - br.left;
+    const edgePx = Math.max(8, Math.min(14, br.width * 0.12));
+    if(lx <= edgePx || lx >= br.width - edgePx){
+      const atStart = lx <= edgePx;
+      const live = track.clips.filter(c => !c.deleted).slice().sort((a,b) => a.start - b.start);
+      const ix = live.indexOf(clip);
+      const prevC = ix > 0 ? live[ix-1] : null;
+      const nextC = ix >= 0 && ix < live.length - 1 ? live[ix+1] : null;
+      let leftC = null, rightC = null, tJoin = atStart ? clip.start : clip.end;
+      if(atStart){
+        rightC = clip;
+        if(prevC && Math.abs(prevC.end - clip.start) < 0.08) leftC = prevC;
+      } else {
+        leftC = clip;
+        if(nextC && Math.abs(clip.end - nextC.start) < 0.08) rightC = nextC;
+      }
+      state.joinSel = {track, t: tJoin, left: leftC, right: rightC};
+      state.xfadeSel = null;
+      setSelection([]);
+      buildTimeline();
+      return;
+    }
     const startX = ev.clientX, startY = ev.clientY;
     // ALT + перетаскивание = ДУБЛИРОВАНИЕ (как в Premiere): оригинал остаётся, переносится клон
     const cloneMode = !!ev.altKey;
@@ -5287,12 +5784,12 @@ function clipBlockEl(clip, track, seq, srcDupMap){
   div.addEventListener('dblclick', ev => {
     ev.stopPropagation();
     ev.preventDefault();
-    if(state.trimUid === clip.uid) exitTrimMode();
-    else enterTrimMode(clip, track);
+    if(state.trimUid === clip.uid && !!state.trimRipple === !!ev.shiftKey) exitTrimMode();
+    else enterTrimMode(clip, track, ev.shiftKey);
   });
   // жёлтые ручки обрезки
   if(state.trimUid === clip.uid && !clip.deleted){
-    div.classList.add('trim-mode');
+    div.classList.add(state.trimRipple ? 'trim-ripple' : 'trim-mode');
     if(track.kind === 'video' || track.kind === 'audio'){
       const stBtn = document.createElement('div');
       stBtn.className = 'clipSettings';
@@ -5304,7 +5801,9 @@ function clipBlockEl(clip, track, seq, srcDupMap){
     const mk = (cls, side) => {
       const h = document.createElement('div');
       h.className = 'trimHandle ' + cls;
-      h.title = side === 'left' ? 'Тяните: обрезать/удлинить клип слева (исходник)' : 'Тяните: обрезать/удлинить клип справа (исходник)';
+      h.title = state.trimRipple
+        ? (side === 'left' ? 'Ripple: влево — вытянуть исходник, клип и всё справа едут' : 'Ripple: вправо — удлинить, всё справа едет')
+        : (side === 'left' ? 'Тяните: обрезать/удлинить клип слева (исходник)' : 'Тяните: обрезать/удлинить клип справа (исходник)');
       h.addEventListener('pointerdown', ev2 => {
         ev2.preventDefault();
         ev2.stopPropagation();
@@ -5324,15 +5823,19 @@ function clipBlockEl(clip, track, seq, srcDupMap){
    Ограничения: исходник не выходит за файл, минимум 1 кадр.
    Связанный звук обрезается синхронно.
    ============================================================ */
-function enterTrimMode(clip, track){
+function enterTrimMode(clip, track, ripple){
   state.trimUid = clip.uid;
+  state.trimRipple = !!ripple;
   clearSpeaker();
   buildTimeline();
-  toast('Обрезка: тяните жёлтые рамки по краям клипа · Esc — выход', '');
+  toast(state.trimRipple
+    ? 'Обрезка со сдвигом: синие рамки · всё справа едет за краем · Esc — выход'
+    : 'Обрезка: тяните жёлтые рамки по краям клипа · Esc — выход', '');
 }
 function exitTrimMode(){
-  if(!state.trimUid) return;
+  if(!state.trimUid && !state.trimRipple) return;
   state.trimUid = null;
+  state.trimRipple = false;
   state.trimDrag = null;
   buildTimeline();
 }
@@ -5374,7 +5877,17 @@ function startTrimDrag(ev, clip, track, side){
       origIn: c.srcIn, origOut: c.srcOut
     };
   });
-  state.trimDrag = {side, items, startX: ev.clientX, before: snapshotEdit(), warnedNoFileDur: false};
+  const exclude = new Set(items.map(it => it.c.uid));
+  const others = [];
+  if(state.trimRipple){
+    for(const tr of allTracksOf(seq)){
+      for(const c of tr.clips){
+        if(c.deleted || exclude.has(c.uid)) continue;
+        others.push({c, origStart: c.start, origEnd: c.end});
+      }
+    }
+  }
+  state.trimDrag = {side, items, others, startX: ev.clientX, before: snapshotEdit(), warnedNoFileDur: false, ripple: !!state.trimRipple};
   window.addEventListener('pointermove', trimMove);
   window.addEventListener('pointerup', trimUp, {once: true});
 }
@@ -5431,7 +5944,7 @@ function trimMove(e){
         toast('Длина исходника неизвестна — удлинение недоступно', 'warn');
       }
       newDur = clamp(newDur, minDur, Math.max(minDur, fileCap));
-      if(nb.right != null) newDur = Math.min(newDur, Math.max(minDur, nb.right - it.origStart));
+      if(!d.ripple && nb.right != null) newDur = Math.min(newDur, Math.max(minDur, nb.right - it.origStart));
       c.durSec = newDur;
       c.end = it.origStart + newDur;
       c.srcOut = it.origIn + newDur * it.sp;
@@ -5442,12 +5955,22 @@ function trimMove(e){
       let newStart = wanted;
       const minStart = Math.max(0, it.origStart - it.origIn / it.sp); // srcIn >= 0
       newStart = clamp(newStart, minStart, it.origEnd - minDur);
-      if(nb.left != null) newStart = Math.max(newStart, Math.min(nb.left, it.origEnd - minDur));
-      const newDur = it.origEnd - newStart;
-      if(newDur < minDur) continue;
-      c.start = newStart;
-      c.durSec = newDur;
-      c.srcIn = it.origOut - newDur * it.sp;
+      if(!d.ripple && nb.left != null) newStart = Math.max(newStart, Math.min(nb.left, it.origEnd - minDur));
+      if(d.ripple){
+        const add = it.origStart - newStart;
+        c.srcIn = Math.max(0, it.origIn - add * it.sp);
+        const realAdd = (it.origIn - c.srcIn) / it.sp;
+        c.start = it.origStart;
+        c.durSec = Math.max(minDur, it.origDur + realAdd);
+        c.end = c.start + c.durSec;
+        c.srcOut = c.srcIn + c.durSec * it.sp;
+      } else {
+        const newDur = it.origEnd - newStart;
+        if(newDur < minDur) continue;
+        c.start = newStart;
+        c.durSec = newDur;
+        c.srcIn = it.origOut - newDur * it.sp;
+      }
     }
     // живое обновление блока и подписи
     const el = document.querySelector('.clipBlock[data-clip-uid="' + c.uid + '"]');
@@ -5456,6 +5979,21 @@ function trimMove(e){
       el.style.width = Math.max(c.durSec * state.ppx, 2) + 'px';
       const cd = el.querySelector('.cdur');
       if(cd) cd.textContent = fmtDur(c.durSec);
+    }
+  }
+  if(d.ripple && d.others){
+    const primary = d.items[0];
+    const sh = primary.c.end - primary.origEnd;
+    const gate = primary.origEnd - 1e-9;
+    for(const o of d.others){
+      if(o.origStart + 1e-9 < gate) continue;
+      const want = o.origStart + sh;
+      if(Math.abs(o.c.start - want) > 1e-9) shiftClipPlacement(o.c, want - o.c.start);
+      const el2 = document.querySelector('.clipBlock[data-clip-uid="' + o.c.uid + '"]');
+      if(el2){
+        el2.style.left = (o.c.start * state.ppx) + 'px';
+        el2.style.width = Math.max(o.c.durSec * state.ppx, 2) + 'px';
+      }
     }
   }
 }
@@ -5481,12 +6019,12 @@ function trimUp(){
   for(const t of allTracksOf(seq)) for(const c of t.clips) if(!c.deleted) maxEnd = Math.max(maxEnd, c.end);
   seq.durSec = Math.max(seq.durSec, maxEnd);
   for(const it of d.items){ invalidateClipPreviewCache(it.c, Math.min(it.origStart, it.c.start), Math.max(it.origEnd, it.c.end)); enqueueClipPreviewCache(it.c); }
-  commitEdit('Обрезка клипа', d.before);
+  commitEdit(d.ripple ? 'Обрезка со сдвигом' : 'Обрезка клипа', d.before);
   recountClips(seq);
   buildTimeline();
   updateMonitor();
   updateStatus();
-  toast('Клип обрезан: ' + fmtDur(d.items[0].c.durSec), '');
+  toast((d.ripple ? 'Со сдвигом: ' : 'Клип обрезан: ') + fmtDur(d.items[0].c.durSec), '');
 }
 
 /* ---- инфо под курсором (правая кнопка по клипу) ---- */
@@ -5644,6 +6182,8 @@ function setSelection(arr){
 function selectClip(clip, track){
   if(state.source) closeSource(); // активен основной таймлайн — окно просмотра очищается
   if(state.trimUid && state.trimUid !== clip.uid) exitTrimMode(); // выбор другого клипа снимает обрезку
+  state.joinSel = null;
+  state.xfadeSel = null;
   setSelection([{clip, track}]);
 }
 /* SHIFT+клик: добавить/убрать клип из выделения, не снимая остальных */
@@ -5724,9 +6264,13 @@ function blockFromSelection(){
     kind: g.kind,
     srcIdx: (g.srcTrack.kind === 'video' ? vOrder : aOrder).indexOf(g.srcTrack),
     clips: g.clips.map(c => {
+      const origStart = c.start;
       const seg = dupClip(c, {uid: 'bf' + (++UID_COUNTER), ciId: '', links: [], linkedClips: [],
         start: c.start - minStart, end: c.end - minStart, durSec: c.durSec, _origUid: c.uid});
-      shiftClipKeyframes(seg, seg.start - c.start);
+      stripClipFades(seg);
+      seg.start = origStart - minStart;
+      seg.end = seg.start + seg.durSec;
+      shiftClipKeyframes(seg, seg.start - origStart);
       segMap.set(c.uid, seg);
       return seg;
     })
@@ -6059,6 +6603,16 @@ function firstFreeAudioTrack(seq, t, dur){
   return d.audio.find(tr => !tr.disabled && !tr.locked && !tr.clips.some(c => !c.deleted && clipsOverlap(c, t, dur))) || null;
 }
 /* Ctrl+C — копирует ВСЕ выделенные клипы блоком (в окно просмотра не выводится) */
+function cutSelection(){
+  const block = blockFromSelection();
+  if(!block){
+    toast('Сначала выделите клип на таймлайне', 'warn');
+    return;
+  }
+  copySelection();
+  deleteSelected(false);
+  toast('Вырезано в буфер · Ctrl+V — вставить', '');
+}
 function copySelection(){
   const block = blockFromSelection();
   if(!block){
@@ -6324,12 +6878,31 @@ function updatePlayhead(){
   $('moTc').textContent = fmtFrames(total, seq ? seq.fps : 25);
 }
 
+function pauseMonitorVideos(){
+  for(const id of ['previewVideo', 'previewVideoB']){
+    const el = $(id);
+    if(!el) continue;
+    try{ el.pause(); }catch(e){}
+    try{ el.autoplay = false; }catch(e){}
+    try{ if(el.playbackRate !== 1) el.playbackRate = 1; }catch(e){}
+  }
+}
+function isStickyMpeg4(med){
+  if(!med) return false;
+  const codec = (med.codec || '').toLowerCase();
+  const name = ((med.f && med.f.name) || '').toLowerCase();
+  if(/avc1|h264|hvc1|hevc|av01|vp8|vp9/.test(codec) || /h264|avc|hevc|h265/.test(name)) return false;
+  if(/^(mp4v|xvid|divx|dx50|mp42|div3|mpeg4)$/.test(codec)) return true;
+  return /xvid|divx|mp4v|dx50/.test(name);
+}
 function seekTo(t, opts){
   const seq = curSeq();
   if(!seq) return;
   const fps = seq.fps;
-  // плейхед можно уводить за последний клип на минуту (пространство для следующего клипа)
   t = clamp(Math.round(t * fps) / fps, 0, seq.durSec + PLAYHEAD_TAIL);
+  if(state.playing && !(opts && opts.keepPlay) && Math.abs((state.t || 0) - t) > 1e-4){
+    try{ togglePlay(false); }catch(e){}
+  }
   state.t = t;
   updatePlayhead();
   updateMonitor();
@@ -6381,7 +6954,7 @@ function visibleVideoHitsAt(seq, t){
     if(tr.disabled) continue;
     for(const c of tr.clips){
       if(c.deleted || c.kind === 'seq') continue;
-      if(t >= c.start - 1e-9 && t < c.end - 1e-9) out.push({clip:c, track:tr});
+      if(clipCoversTime(c, t)) out.push({clip:c, track:tr});
     }
   }
   return out;
@@ -6392,6 +6965,7 @@ function shouldCanvasMonitor(seq, hit){
   // слои друг над другом, GIF/картинки, альфа, MOV RLE или Motion/Opacity.
   if(!seq || !hit || !hit.clip || hit.clip.kind === 'seq') return false;
   const hits = visibleVideoHitsAt(seq, state.t);
+  if(hits.some(h => clipHasFade(h.clip))) return true;
   if(hits.length > 1) return true;
   for(const h of hits){
     const c = h.clip;
@@ -6429,10 +7003,12 @@ async function renderTimelineMonitor(seq){
 }
 function useCanvasMonitor(seq){
   const v = $('previewVideo');
+  const vb = $('previewVideoB');
   const pimg = $('previewImage');
   const mc = $('monitorCanvas');
   const qc = $('qtrleCanvas');
   if(v){ try{ v.pause(); }catch(e){} v.style.display = 'none'; }
+  if(vb){ try{ vb.pause(); }catch(e){} vb.style.display = 'none'; }
   if(pimg) pimg.style.display = 'none';
   if(qc) qc.style.display = 'none';
   if(mc) mc.style.display = 'block';
@@ -6442,6 +7018,7 @@ function updateMonitor(){
   if(state.source) return; // открыт источник из бина — монитор управляется панелью источника
   const seq = curSeq();
   const v = $('previewVideo');
+  const vB = $('previewVideoB');
   const pimg = $('previewImage'); if(pimg) pimg.style.display = 'none';
   const mc0 = $('monitorCanvas'); if(mc0) mc0.style.display = 'none';
   const ov = $('monitorOverlay');
@@ -6464,7 +7041,7 @@ function updateMonitor(){
     for(const tr of seq.audioTracks.concat(seq.scratchA||[])){
       if(tr.disabled) continue; // дорожка выключена — звук не играет
       for(const c of tr.clips){
-        if(!c.enabled || c.deleted || state.t < c.start - 1e-6 || state.t >= c.end - 1e-6) continue;
+        if(!c.enabled || c.deleted || !clipCoversTime(c, state.t)) continue;
         const m = c.fileId ? state.media.get(c.fileId) : null;
         if(!m) continue;
         want.push({c, m});
@@ -6516,13 +7093,14 @@ function updateMonitor(){
 
   /* ---- ВИДЕО в мониторе ---- */
   if(!hit){
-    // на этой позиции вообще нет клипов — просто чёрное поле
     ov.style.display = 'flex';
     $('moClip').textContent = '';
     $('moHint').textContent = '';
     $('moHint').className = 'hint';
     $('mbClip').textContent = '—';
-    useCanvasMonitor(seq);
+    if(v){ try{ v.pause(); }catch(e){} v.style.display = 'none'; }
+    if(vB){ try{ vB.pause(); }catch(e){} vB.style.display = 'none'; }
+    if(mc0) mc0.style.display = 'none';
     return;
   }
   const {clip} = hit;
@@ -6597,35 +7175,104 @@ function updateMonitor(){
   if(qc) qc.style.display = 'none';
   ov.style.display = 'none';
   if(pimg) pimg.style.display = 'none';
-  v.style.display = 'block';
-  v.muted = true; // звук идёт через отдельные аудио-элементы
-  // смена файла или режима FAST/original?
   const previewUrl = mediaUrlForPreview(med);
   const previewKey = clip.fileId + '|' + previewUrl;
-  if(state.previewFileId !== previewKey){
-    state.previewFileId = previewKey;
-    v.dataset.loaded = '0';
-    v.removeAttribute('src');
-    v.src = previewUrl;
-    v.load();
-  }
-  const apply = () => {
-    if(v.dataset.loaded !== '1') return;
+  if(!state.monVis) state.monVis = 'previewVideo';
+  const visId = state.monVis;
+  const hidId = visId === 'previewVideo' ? 'previewVideoB' : 'previewVideo';
+  const vVis = $(visId) || v;
+  const vHid = $(hidId) || vB;
+  const applyTo = (el) => {
+    if(!el || el.dataset.loaded !== '1') return;
     try{
-      const target = clamp(srcT, 0.001, Math.max(0.001, (v.duration||0) - 0.05));
-      if(Math.abs(v.currentTime - target) > 0.12) v.currentTime = target;
+      const target = clamp(srcT, 0.001, Math.max(0.001, (el.duration||0) - 0.05));
+      const slop = state.playing ? 0.12 : (1 / ((curSeq() && curSeq().fps) || 25));
+      if(Math.abs(el.currentTime - target) > slop) el.currentTime = target;
     }catch(e){}
   };
-  v.onloadedmetadata = () => { v.dataset.loaded = '1'; apply(); };
-  v.onerror = () => {
-    v.dataset.loaded = '-1';
-    markMediaOffline(clip.fileId, med.f.name); // файл исчез/не читается — клипы офлайн
+  const showEl = (el, hideEl) => {
+    if(!el) return;
+    el.muted = true;
+    el.style.display = 'block';
+    el.style.transform = 'scale(' + (clipMotionValue(clip, 'scale', state.t) / 100) + ')';
+    el.style.opacity = String(clipMotionValue(clip, 'opacity', state.t) / 100);
+    if(hideEl && hideEl !== el){
+      hideEl.style.display = 'none';
+      try{ hideEl.pause(); }catch(e){}
+    }
+    if(state.playing && state.playSpeed > 0 && el.dataset.loaded === '1' && el.paused) el.play().catch(()=>{});
+    else if(!state.playing && isStickyMpeg4(med)){
+      try{ el.pause(); }catch(e){}
+      if(hideEl) try{ hideEl.pause(); }catch(e){}
+    }
   };
-  if(v.dataset.loaded === '1') apply();
-  v.style.transform = 'scale(' + (clipMotionValue(clip, 'scale', state.t) / 100) + ')';
-  v.style.opacity = String(clipMotionValue(clip, 'opacity', state.t) / 100);
+  const loadInto = (el, key, url) => {
+    if(!el) return;
+    if(el.dataset.key === key && el.dataset.loaded === '1') return;
+    el.dataset.key = key;
+    el.dataset.loaded = '0';
+    el.muted = true;
+    el.src = url;
+    el.load();
+    el.onloadedmetadata = () => {
+      el.dataset.loaded = '1';
+      const hit2 = topClipAt(state.t);
+      const med2 = hit2 && hit2.clip && hit2.clip.fileId ? state.media.get(hit2.clip.fileId) : null;
+      const url2 = med2 ? mediaUrlForPreview(med2) : '';
+      const key2 = hit2 && hit2.clip ? (hit2.clip.fileId + '|' + url2) : '';
+      if(key2 !== key) return;
+      applyTo(el);
+      state.monVis = el.id;
+      state.previewFileId = key;
+      if(!state.playing && isStickyMpeg4(med)){ try{ el.pause(); }catch(e){} }
+      showEl(el, el === vVis ? vHid : vVis);
+    };
+    el.onerror = () => {
+      el.dataset.loaded = '-1';
+      markMediaOffline(clip.fileId, med.f && med.f.name);
+    };
+  };
+  if(!state.playing){
+    // стоящий плейхед: один слот, без A/B-свопа — нет чёрного микрокадра на стыке
+    if(vHid){ try{ vHid.pause(); }catch(e){} vHid.style.display = 'none'; }
+    if(vVis.dataset.key === previewKey && vVis.dataset.loaded === '1'){
+      showEl(vVis, vHid);
+      applyTo(vVis);
+    } else {
+      showEl(vVis, vHid);
+      loadInto(vVis, previewKey, previewUrl);
+    }
+  } else if(state.previewFileId === previewKey && vVis.dataset.key === previewKey && vVis.dataset.loaded === '1'){
+    showEl(vVis, vHid);
+    applyTo(vVis);
+  } else if(vHid && vHid.dataset.key === previewKey && vHid.dataset.loaded === '1'){
+    applyTo(vHid);
+    state.monVis = hidId;
+    state.previewFileId = previewKey;
+    showEl(vHid, vVis);
+  } else {
+    // не гасим текущий кадр: грузим следующий в скрытый слот
+    if(vVis && vVis.dataset.key === previewKey){
+      showEl(vVis, vHid);
+      applyTo(vVis);
+    } else {
+      const dest = (vVis && vVis.dataset.loaded === '1' && vHid) ? vHid : (vVis || vHid);
+      if(vVis && dest === vHid && vVis.dataset.loaded === '1') vVis.style.display = 'block';
+      loadInto(dest, previewKey, previewUrl);
+      if(dest === vHid && vHid) vHid.style.display = 'none';
+    }
+  }
   if(state.playing && state.playSpeed > 0){
-    if(v.dataset.loaded === '1' && v.paused) v.play().catch(()=>{});
+    const nxt = topClipAt(state.t + 0.4);
+    if(nxt && nxt.clip && nxt.clip.fileId && nxt.clip.fileId !== clip.fileId){
+      const nmed = state.media.get(nxt.clip.fileId);
+      if(nmed){
+        const nurl = mediaUrlForPreview(nmed);
+        const nkey = nxt.clip.fileId + '|' + nurl;
+        const spare = vHid;
+        if(spare && spare.dataset.key !== nkey && spare.dataset.key !== previewKey) loadInto(spare, nkey, nurl);
+      }
+    }
   }
 }
 
@@ -6939,8 +7586,7 @@ function togglePlay(force){
     lastTick = performance.now();
     requestAnimationFrame(tick);
   } else {
-    const v = $('previewVideo');
-    if(!v.paused) v.pause();
+    pauseMonitorVideos();
     stopAudioClips();
   }
 }
@@ -6960,7 +7606,7 @@ function doublePlay(dir){
   const v = $('previewVideo');
   if(sp < 0){
     // назад: видео на паузе, кадры подставляются синхронизацией монитора
-    if(!v.paused) v.pause();
+    pauseMonitorVideos();
     stopAudioClips();
   } else {
     if(v.dataset.loaded === '1'){ try{ v.playbackRate = sp; }catch(e){} }
@@ -7197,7 +7843,7 @@ function sniffFile(f){
           const TAGS = [
             ['ap4h','prores4444'], ['ap4x','prores4444xq'], ['apch','proreshq'], ['apcn','proresstd'], ['apcs','proreslt'], ['apco','proresproxy'],
             ['png ','png'], ['rle ','qtrle'], ['AVdh','dnxhr444'],
-            ['avc1','h264'], ['hvc1','hevc'], ['vp09','vp9'], ['vp8 ','vp8'], ['av01','av1']
+            ['avc1','h264'], ['hvc1','hevc'], ['vp09','vp9'], ['vp8 ','vp8'], ['av01','av1'], ['mp4v','mpeg4'], ['xvid','mpeg4'], ['divx','mpeg4'], ['mp42','mpeg4']
           ];
           let codec = '', alpha = false, seen = 0;
           for(let i = 0; i + 4 <= bytes.length; i++){
@@ -8289,6 +8935,7 @@ tlScroll.addEventListener('wheel', e => {
     e.preventDefault();
     e.stopPropagation(); // чтобы не срабатывал общий оверлей окна
     e.dataTransfer.dropEffect = 'copy';
+    state.dropRipple = !!(e.ctrlKey || e.metaKey);
     const seq = curSeq();
     if(!seq) return;
     // автопрокрутка у краёв, чтобы можно было класть отрывок за пределы видимой области
@@ -8348,7 +8995,8 @@ tlScroll.addEventListener('wheel', e => {
         const p = JSON.parse(clipData);
         const marked = p.in != null && p.out != null && p.out > p.in;
         const src = marked ? {in: p.in, out: p.out} : null;
-        const clip = insertClipOnTimeline(p.fileId, dt ? dt.t : state.t, dt ? dt.target : null, src);
+        const rip = !!(state.dropRipple || e.ctrlKey || e.metaKey);
+        const clip = insertClipOnTimeline(p.fileId, dt ? dt.t : state.t, dt ? dt.target : null, src, rip);
         if(clip){
           const tc = fmtFrames(Math.round((dt ? dt.t : state.t) * curSeq().fps) + curSeq().tcStartFrames, curSeq().fps);
           toast('«' + clip.name + '» добавлен на таймлайн' + (marked ? ' (отмеченный кусок ' + fmtDur(clip.durSec) + ')' : '') + ' — ' + tc, '');
@@ -8364,7 +9012,7 @@ tlScroll.addEventListener('wheel', e => {
       const f0 = files[0];
       const info = state.model.files[fid];
       const place = () => {
-        insertClipOnTimeline(fid, dt.t, dt.target || null);
+        insertClipOnTimeline(fid, dt.t, dt.target || null, null, !!(state.dropRipple || e.ctrlKey || e.metaKey));
         toast('Клип добавлен на таймлайн — ' + fmtFrames(Math.round(dt.t * curSeq().fps) + curSeq().tcStartFrames, curSeq().fps), '');
       };
       if(isAudioFile(f0)){
@@ -8392,6 +9040,7 @@ tlScroll.addEventListener('wheel', e => {
 
 // клик/драг по линейке и пустому месту дорожек
 $('tlRuler').addEventListener('pointerdown', ev => {
+  if(state.joinSel || state.xfadeSel){ state.joinSel = null; state.xfadeSel = null; buildTimeline(); }
   if(ev.button !== 0) return; // средняя кнопка — пан
   if(state.source) closeSource(); // активен основной таймлайн
   clearSpeaker();
@@ -8448,7 +9097,8 @@ $('tlTrackRows').addEventListener('pointerdown', ev => {
     return;
   }
   if(ev.button !== 0) return; // средняя кнопка — пан
-  if(ev.target.closest('.clipBlock') || ev.target.closest('.tlHCell')) return;
+  if(ev.target.closest('.clipBlock') || ev.target.closest('.tlHCell') || ev.target.closest('.xfadeBand') || ev.target.closest('.joinGlow')) return;
+  if(state.joinSel || state.xfadeSel){ state.joinSel = null; state.xfadeSel = null; buildTimeline(); }
   ev.preventDefault();
   // широкая зона захвата плейхеда на таймлайне: клик/драг по пустому месту
   // в пределах 16px от линии плейхеда (в 2 раза шире обычного хвата) — тянем плейхед
@@ -8805,6 +9455,7 @@ function cloneClipForDrag(c){
   // сдвигал ключи также у исходного клипа. Теперь дубликат получает независимую копию.
   if(c.motion) n.motion = structuredClone(c.motion);
   if(c.audioAuto) n.audioAuto = structuredClone(c.audioAuto);
+  stripClipFades(n);
   return n;
 }
 function startClipDrag(ev, clip, track, group, cloneMode){
@@ -8842,7 +9493,7 @@ function startClipDrag(ev, clip, track, group, cloneMode){
     cloneMode: !!cloneMode,
     delta: 0, curStart: primary.origStart,
     maxUp, maxDown,
-    hoverRow: null, moved: false,
+    hoverRow: null, moved: false, ctrlRipple: !!(ev.ctrlKey || ev.metaKey),
     srcEls: members.map(m => {
       // в режиме клона подсвечиваем оригинал (он остаётся на месте)
       const el = document.querySelector('.clipBlock[data-clip-uid="' + (cloneMode ? m.orig.uid : m.clip.uid) + '"]');
@@ -8852,7 +9503,7 @@ function startClipDrag(ev, clip, track, group, cloneMode){
     ghosts: members.map(m => {
       const g = document.createElement('div');
       g.className = 'ghostDrag';
-      g.style.background = clipColor(m.clip.name, m.clip.label) + 'd9';
+      g.style.background = (m.kind === 'audio' ? darkenHex(clipColor(m.clip.name, m.clip.label), 0.28) : clipColor(m.clip.name, m.clip.label)) + 'd9';
       const lb = document.createElement('div'); lb.className = 'glabel'; lb.textContent = m.clip.name + (cloneMode ? ' · копия' : '');
       g.appendChild(lb);
       $('tlInner').appendChild(g);
@@ -8871,7 +9522,7 @@ function updateDragGhosts(e){
   // ---- горизонталь с привязкой ----
   const rawT = Math.max(0, drag.primary.origStart + (e.clientX - drag.startX) / state.ppx);
   let bestT = rawT;
-  let bestDist = state.snapEnabled ? 8 / state.ppx : 0; // порог магнита: 8px
+  let bestDist = state.snapEnabled ? 12 / state.ppx : 0;
   if(state.snapEnabled){
     const edges = [0, seq.durSec, state.t];
     const inGroup = new Set();
@@ -8882,10 +9533,13 @@ function updateDragGhosts(e){
     }
     for(const m of members){
       const off = m.origStart - drag.primary.origStart;
+      const dur = m.clip.durSec || 0;
       for(const e of edges){
-        const cand = e - off;
-        const dist = Math.abs(cand - rawT);
-        if(dist < bestDist){ bestDist = dist; bestT = cand; }
+        // магнит и к началу, и к хвосту клипа
+        for(const cand of [e - off, e - off - dur]){
+          const dist = Math.abs(cand - rawT);
+          if(dist < bestDist){ bestDist = dist; bestT = cand; }
+        }
       }
     }
   }
@@ -8926,6 +9580,7 @@ function updateDragGhosts(e){
   drag.chip.style.left = (e.clientX + 14) + 'px';
   drag.chip.style.top = (e.clientY + 16) + 'px';
   drag.moved = true;
+  drag.ctrlRipple = !!(e.ctrlKey || e.metaKey);
 }
 
 function endClipDrag(){
@@ -8993,10 +9648,25 @@ function endClipDrag(){
       const i = m.origTrack.clips.indexOf(m.clip);
       if(i >= 0) m.origTrack.clips.splice(i, 1);
     }
-    // 3) перезапись на целевых дорожках — как в Premiere: всё под клипом затирается
+    // 3) CTRL — Insert со сдвигом (как из бина): разрез + всё правее едет на длину клипа
     let overwritten = 0;
-    for(const {m, newTrack, newStart} of targets){
-      overwritten += overwriteOnTrack(newTrack, newStart, m.clip.durSec);
+    if(drag.ctrlRipple){
+      const tIns = Math.min(...targets.map(x => x.newStart));
+      const gap = drag.primary.clip.durSec;
+      const skip = new Set(targets.map(x => x.m.clip.uid));
+      cutAllTracksAt(tIns, true);
+      for(const tr of allTracksOf(seq)){
+        if(tr.disabled || tr.locked) continue;
+        for(const c of tr.clips){
+          if(c.deleted || skip.has(c.uid)) continue;
+          if(c.start >= tIns - 1e-6) shiftClipPlacement(c, gap);
+        }
+        tr.clips.sort((a,b) => a.start - b.start);
+      }
+    } else {
+      for(const {m, newTrack, newStart} of targets){
+        overwritten += overwriteOnTrack(newTrack, newStart, m.clip.durSec);
+      }
     }
     // 4) вставка в освободившееся место
     for(const {m, newTrack, newStart} of targets){
@@ -9010,7 +9680,7 @@ function endClipDrag(){
     let maxEnd = 0;
     for(const m of members) maxEnd = Math.max(maxEnd, m.clip.end);
     if(maxEnd > seq.durSec) seq.durSec = maxEnd;
-    commitEdit('Перемещение клипа' + (overwritten ? ' (перезапись)' : ''), before);
+    commitEdit((drag.ctrlRipple ? 'Вставка со сдвигом (клип)' : 'Перемещение клипа') + (overwritten ? ' (перезапись)' : ''), before);
     for(const {m, newStart} of targets){ invalidateClipPreviewCache(m.clip, m.origStart, m.origStart + m.clip.durSec); invalidateClipPreviewCache(m.clip, newStart, newStart + m.clip.durSec); }
     buildTimeline();
     for(const {m} of targets) enqueueClipPreviewCache(m.clip);
@@ -9260,29 +9930,47 @@ function deleteBetweenMarks(ripple){
   if(!removed) toast('Пустота между метками схлопнута · сдвинуто ' + moved + ' клип(ов)', '');
   else toast((ripple ? 'Удалено со сдвигом: ' : 'Удалено: ') + removed + ' клип(ов)' + (moved ? ' · сдвинуто ' + moved : ''), '');
 }
-function deleteSelected(){
+function deleteSelected(ripple){
+  if(state.xfadeSel && (state.xfadeSel.clip || state.xfadeSel.left)){
+    removeJoinFade(state.xfadeSel.left || state.xfadeSel.clip, state.xfadeSel.right || state.xfadeSel.clip);
+    return;
+  }
   if(!state.selSet.length && !(state.sel && state.sel.kind === 'clip')){ toast('Сначала выделите клип на таймлайне', 'warn'); return; }
+  const seq = curSeq();
   const group = selectedGroup(); // выделенное рамкой (+ связки при линке)
   const before = snapshotEdit();
   let n = 0;
-  // клипы удаляются с линейки полностью (Ctrl+Z вернёт)
+  let minStart = Infinity, maxEnd = -Infinity;
   for(const g of group){
-    const t = findTrackOfClip(curSeq(), g.clip);
+    if(!g.clip || g.clip.deleted) continue;
+    minStart = Math.min(minStart, g.clip.start);
+    maxEnd = Math.max(maxEnd, g.clip.end);
+    const t = findTrackOfClip(seq, g.clip);
     if(!t) continue;
     invalidateClipPreviewCache(g.clip);
     const i = t.clips.indexOf(g.clip);
     if(i >= 0){ t.clips.splice(i, 1); n++; }
   }
   if(!n){ toast('Нечего удалять', 'warn'); return; }
-  commitEdit('Удаление клипа' + (n > 1 ? ' (' + n + ' шт.)' : ''), before);
-  recountClips(curSeq());
-  // активная область сразу сжимается: хвост пустоты за последним клипом убирается
-  curSeq().durSec = activeEnd(curSeq());
+  let moved = 0;
+  if(ripple && isFinite(minStart) && maxEnd > minStart){
+    const delta = maxEnd - minStart;
+    for(const tr of allTracksOf(seq)){
+      if(tr.disabled || tr.locked) continue;
+      for(const c of tr.clips){
+        if(c.deleted) continue;
+        if(c.start >= maxEnd - 1e-6){ shiftClipPlacement(c, -delta); moved++; }
+      }
+    }
+  }
+  commitEdit((ripple ? 'Удаление со сдвигом' : 'Удаление клипа') + (n > 1 ? ' (' + n + ' шт.)' : ''), before);
+  recountClips(seq);
+  seq.durSec = activeEnd(seq);
   setSelection([]);
   buildTimeline();
   updateMonitor();
   updateStatus();
-  toast('Удалено: ' + n + ' · Ctrl+Z — вернуть', '');
+  toast((ripple ? 'Удалено со сдвигом: ' : 'Удалено: ') + n + (moved ? ' · сдвинуто ' + moved : '') + ' · Ctrl+Z — вернуть', '');
 }
 
 /* ============================================================
@@ -9387,6 +10075,7 @@ function performBladeCut(victims, cutT){
     const right = dupClip(c, {uid: 'cl' + (++UID_COUNTER), start: cutT, end: c.end, durSec: c.end - cutT, srcIn: cutSrc});
     right.linkedClips = (c.linkedClips||[]).slice();
     c.end = cutT; c.durSec = cutT - c.start; c.srcOut = cutSrc;
+    splitFadesAfterCut(c, right);
     additions.push({right, track: tr});
   }
   for(const a of additions){
@@ -9442,6 +10131,7 @@ function overwriteOnTrack(track, t, dur){
       right.linkedClips = c.linkedClips.slice();
 
       delete right.manualUnlink; delete right.manualLink;
+      splitFadesAfterCut(left, right);
       out.push(left, right);
       continue;
     }
@@ -9450,6 +10140,7 @@ function overwriteOnTrack(track, t, dur){
       left.linkedClips = c.linkedClips.slice();
 
       delete left.manualUnlink; delete left.manualLink;
+      splitFadesAfterCut(left, null);
       out.push(left);
       continue;
     }
@@ -9458,6 +10149,7 @@ function overwriteOnTrack(track, t, dur){
       right.linkedClips = c.linkedClips.slice();
 
       delete right.manualUnlink; delete right.manualLink;
+      splitFadesAfterCut(null, right);
       out.push(right);
       continue;
     }
@@ -9552,9 +10244,12 @@ function insertClipOnTimeline(fileId, t, target, src, ripple, opts){
   let track = null, audioTrack = null, createdV = false, createdA = false;
   if(hasV){
     if(ripple){
-      // Insert, как в Premiere: на нижнюю видео-дорожку (V1) — место освобождено сдвигом
-      const std = d.video.filter(tr => !tr.isScratch);
-      track = std.length ? std[std.length - 1] : d.video[d.video.length - 1];
+      if(target && target.kind === 'video'){
+        track = d.video[clamp(target.row ?? d.video.length - 1, 0, d.video.length - 1)];
+      } else {
+        const std = d.video.filter(tr => !tr.isScratch);
+        track = std.length ? std[std.length - 1] : d.video[d.video.length - 1];
+      }
     } else if(noOverwrite || markedRange){
       // «Вставить»: следующая свободная дорожка над контентом — ничего не затираем.
       // Свободной нет — автоматически создаём новую (как в Premiere)
@@ -9570,7 +10265,8 @@ function insertClipOnTimeline(fileId, t, target, src, ripple, opts){
       audioTrack = freeAdj(d.audio, false); // звук — тоже только на свободную дорожку
       if(!audioTrack){ audioTrack = pushScratchTrack(seq, 'audio'); createdA = true; }
     } else if(ripple){
-      audioTrack = firstStandardAudioTrack(seq);
+      if(target && target.kind === 'audio') audioTrack = d.audio[clamp(target.row ?? 0, 0, d.audio.length - 1)];
+      else audioTrack = firstStandardAudioTrack(seq);
     } else if(target && target.kind === 'audio'){
       audioTrack = d.audio[clamp(target.row ?? 0, 0, d.audio.length - 1)];
     }
@@ -9580,7 +10276,8 @@ function insertClipOnTimeline(fileId, t, target, src, ripple, opts){
       track = freeAdj(d.audio, false);
       if(!track){ track = pushScratchTrack(seq, 'audio'); createdA = true; }
     } else if(ripple){
-      track = firstStandardAudioTrack(seq);
+      if(target && target.kind === 'audio') track = d.audio[clamp(target.row ?? 0, 0, d.audio.length - 1)];
+      else track = firstStandardAudioTrack(seq);
     } else if(target && target.kind === 'audio'){
       track = d.audio[clamp(target.row ?? 0, 0, d.audio.length - 1)];
     }
@@ -11352,11 +12049,15 @@ window.addEventListener('keydown', e => {
    схлопывается, выделенные клипы удаляются, иначе диапазон между метками
    Входа/Выхода (SHIFT — со сдвигом, как Ripple Delete в Premiere) */
 function doDeleteKey(shift){
+  if(state.xfadeSel && (state.xfadeSel.clip || state.xfadeSel.left)){
+    removeJoinFade(state.xfadeSel.left || state.xfadeSel.clip, state.xfadeSel.right || state.xfadeSel.clip);
+    return;
+  }
   if(state.gapSel){ rippleDeleteGap(); return; }
-  if(state.selSet.length || (state.sel && state.sel.kind === 'clip')){ deleteSelected(); return; }
+  if(state.selSet.length || (state.sel && state.sel.kind === 'clip')){ deleteSelected(!!shift); return; }
   const mm = state.tlMarks;
   if(mm && mm.in != null && mm.out != null){ deleteBetweenMarks(!!shift); return; }
-  deleteSelected();
+  deleteSelected(!!shift);
 }
 window.addEventListener('keydown', e => {
   if(!state.model) return;
@@ -11390,6 +12091,7 @@ window.addEventListener('keydown', e => {
   if(e.altKey && !e.ctrlKey && !e.metaKey){
     if(code === 'KeyX'){ e.preventDefault(); avCutRange(); return; }
     if(code === 'KeyC'){ e.preventDefault(); avCopyRange(); return; }
+    if(code === 'KeyT'){ e.preventDefault(); applyJoinFade('audio'); return; }
   }
   // все горячие клавиши привязаны к физическим клавишам (e.code),
   // поэтому работают в любой раскладке: русской и английской
@@ -11399,6 +12101,7 @@ window.addEventListener('keydown', e => {
     if(code === 'KeyY'){ e.preventDefault(); redoEdit(); return; }
     if(code === 'KeyS'){ e.preventDefault(); exportXml(); return; } // сохранить в XML
     if(code === 'KeyC'){ e.preventDefault(); copySelection(); return; } // копировать клипы
+    if(code === 'KeyX'){ e.preventDefault(); cutSelection(); return; } // вырезать в буфер
     if(code === 'KeyV'){ e.preventDefault(); pasteClips(e.shiftKey); return; } // вставить (Shift — со сдвигом)
     return;
   }
@@ -11430,6 +12133,11 @@ window.addEventListener('keydown', e => {
       deleteBinNode(bn);
       return;
     }
+  }
+  if(code === 'KeyT'){
+    e.preventDefault();
+    if(e.shiftKey){ applyJoinFade('video'); return; }
+    return;
   }
   if(code === 'KeyX'){
     e.preventDefault();
@@ -12447,7 +13155,7 @@ function applyLang(){
   for(const pair of TR_TEXT){ const el = $(pair[0]); if(el) el.textContent = t(pair[1]); }
   for(const pair of TR_TITLE){ const el = $(pair[0]); if(el) el.title = t(pair[1]); }
   const ep = $('emptyP'); if(ep) ep.innerHTML = t('empty_p');
-  const av = $('appVer'); if(av) av.innerHTML = t('app_ver') + ' <b>v4.71</b>';
+  const av = $('appVer'); if(av) av.innerHTML = t('app_ver') + ' <b>v4.87</b>';
   for(const id of ['lblVideo','lblAudio']) { const el = $(id); if(el) el.textContent = t(id === 'lblVideo' ? 'lbl_video' : 'lbl_audio'); }
   for(const pr of [['expTitleTxt','exp_title'],['lblRes','lbl_res'],['lblBr','lbl_br'],['lblRange','lbl_range'],['lblCodec','lbl_codec'],
                    ['lblStop','lbl_stop'],['lblStartExp','lbl_start_exp'],['lblCancel','lbl_cancel'],
@@ -12459,7 +13167,7 @@ function applyLang(){
     const el = $(pr[0]); if(el) el.innerHTML = t(pr[1]); // ссылки сохраняются в переводах
   }
   const nsPh = $('nsName'); if(nsPh) nsPh.placeholder = t('ns_ph');
-  const bs = $('brandSub'); if(bs) bs.textContent = 'v4.71 — ' + t('brand_sub');
+  const bs = $('brandSub'); if(bs) bs.textContent = 'v4.87 — ' + t('brand_sub');
   const lw = $('lbWheelHint'); if(lw) lw.textContent = t('wheel_hint');
   const rh = $('restHint'); if(rh) rh.textContent = t('rest_phrase');
   updateStatus();
@@ -12490,21 +13198,24 @@ const HELP_ROWS = [
   ['Ctrl','Alt','⎵','←','↓','→']
 ];
 const HELP_KEYCOLORS = {
-  'C':'#29d698','V':'#729acc','X':'#f76fa4','I':'#eda63b','O':'#eda63b','E':'#eda63b','R':'#eda63b',
+  'C':'#29d698','V':'#729acc','T':'#7ec8e3','X':'#f76fa4','I':'#eda63b','O':'#eda63b','E':'#eda63b','R':'#eda63b',
   'D':'#e384e3','A':'#2fbfde','H':'#51b858','B':'#970097','Z':'#a690e0','S':'#a690e0','Y':'#a690e0',
   '⎵':'#e8d44d','1':'#e8d44d','2':'#e8d44d','↑':'#29d698','↓':'#29d698','=':'#29d698','-':'#29d698',
   '~':'#29d698','\\':'#e8d44d','⌫':'#f76fa4','Esc':'#f76fa4','J':'#2fbfde','K':'#2fbfde','L':'#2fbfde'
 };
 const HELP_KEY_ITEMS = [
   {keys:['C'], color:'#29d698',
-   ru:['<b>CTRL+C</b> — копировать выделенные клипы (пачка с дорожками)','<b>ALT+C</b> — копировать в окно просмотра и в буфер всё между меток'],
-   en:['<b>CTRL+C</b> — copy the selected clips (a block with tracks)','<b>ALT+C</b> — copy everything between the marks to the viewer and the buffer']},
+   ru:['<b>CTRL+C</b> — копировать выделенные клипы (пачка с дорожками)','<b>ALT+C</b> — копировать в окно просмотра и в буфер всё между меток','(<b>CTRL+X</b>)'],
+   en:['<b>CTRL+C</b> — copy the selected clips (a block with tracks)','<b>ALT+C</b> — copy everything between the marks to the viewer and the buffer','(<b>CTRL+X</b>)']},
   {keys:['V'], color:'#729acc',
    ru:['<b>CTRL+V</b> — вставить пачку на свободные дорожки в том же порядке','<b>CTRL+SHIFT+V</b> — вставить пачку со сдвигом','<b>V</b> — инструмент «Выбор»'],
    en:['<b>CTRL+V</b> — paste the block onto free tracks in the same order','<b>CTRL+SHIFT+V</b> — paste the block with ripple','<b>V</b> — the Select tool']},
+  {keys:['T'], color:'#7ec8e3',
+   ru:['<b>ALT+T</b> — фейдер звука: на стыке оба клипа звучат вместе (уход+появление). На клипе можно и вход, и выход. Двойной клик по полосе — только длина. DEL — удалить','<b>SHIFT+T</b> — видео-фейд на клипе (можно несколько на дорожке). CTRL+перетаскивание клипа — вставка со сдвигом, как из бина'],
+   en:['<b>ALT+T</b> — audio fade as volume keys on the clip. Crossfade at a cut, fade-in at the start. Double-click the bar to trim length. DEL removes it','<b>SHIFT+T</b> — video: LOG opacity keys 0↔100 on the clip itself (not into empty space). Double-click for duration handles']},
   {keys:['X'], color:'#f76fa4',
-   ru:['<b>X</b> — метки по верхнему клипу под плейхедом','<b>SHIFT+X</b> — удалить диапазон меток со сдвигом','<b>ALT+X</b> — вырезать диапазон в буфер (на месте пустота)'],
-   en:['<b>X</b> — marks of the top clip under the playhead','<b>SHIFT+X</b> — delete the mark range with ripple','<b>ALT+X</b> — cut the range to the buffer (a hole is left in place)']},
+   ru:['<b>X</b> — метки по верхнему клипу под плейхедом','<b>CTRL+X</b> — вырезать выделенные клипы в буфер','<b>SHIFT+X</b> — удалить выделенное или диапазон меток со сдвигом (ripple)','<b>ALT+X</b> — вырезать диапазон в буфер (на месте пустота)'],
+   en:['<b>X</b> — marks of the top clip under the playhead','<b>CTRL+X</b> — cut selected clips to the buffer','<b>SHIFT+X</b> — ripple-delete selection or the mark range','<b>ALT+X</b> — cut the range to the buffer (a hole is left in place)']},
   {keys:['I','E'], color:'#eda63b',
    ru:['<b>I</b> или <b>E</b> — метка Входа; <b>SHIFT</b> — магнит к ближайшему стыку'],
    en:['<b>I</b> or <b>E</b> — In mark; <b>SHIFT</b> — snap to the nearest cut']},
@@ -12554,7 +13265,10 @@ const HELP_KEY_ITEMS = [
 const HELP_SHIFT = {
   ru:[
     '<b>SHIFT+клик</b> — добавить клип к выделению (можно выделить несколько клипов сразу)',
-    '<b>SHIFT+DEL</b> / <b>SHIFT+X</b> — удалить диапазон меток со сдвигом (всё правее подтягивается влево)',
+    '<b>SHIFT+двойной клик</b> — синие рамки: обрезка со сдвигом (всё справа едет, как Ripple Trim)',
+    '<b>SHIFT+DEL</b> / <b>SHIFT+X</b> — удалить выделенные клипы или диапазон меток со сдвигом (всё правее подтягивается влево)',
+    '<b>CTRL+перетаскивание из бина</b> — вставить со сдвигом на позицию курсора (как Insert в Premiere)',
+    '<b>ALT+T</b> — аудио-фейдер (стык или из тишины) · <b>SHIFT+T</b> — видео (стык или из чёрного)',
     '<b>SHIFT+I</b> / <b>SHIFT+O</b> — метка с магнитом к ближайшему стыку',
     '<b>SHIFT+B</b> — вставить из окна просмотра со сдвигом',
     '<b>SHIFT+клик лезвием</b> — разрез всех дорожек под лезвием',
@@ -12562,7 +13276,10 @@ const HELP_SHIFT = {
   ],
   en:[
     '<b>SHIFT+click</b> — add a clip to the selection (select several clips at once)',
-    '<b>SHIFT+DEL</b> / <b>SHIFT+X</b> — delete the mark range with ripple (everything to the right pulls left)',
+    '<b>SHIFT+double-click</b> — blue frames: ripple trim (everything to the right moves)',
+    '<b>SHIFT+DEL</b> / <b>SHIFT+X</b> — ripple-delete selected clips or the mark range (everything to the right pulls left)',
+    '<b>CTRL+drag from the bin</b> — insert with ripple at the cursor (Premiere Insert)',
+    '<b>ALT+T</b> — audio fade (cut or from silence) · <b>SHIFT+T</b> — video (cut or from black)',
     '<b>SHIFT+I</b> / <b>SHIFT+O</b> — a mark snapped to the nearest cut',
     '<b>SHIFT+B</b> — insert from the viewer with ripple',
     '<b>SHIFT+blade click</b> — cut all tracks under the blade',
@@ -12856,8 +13573,8 @@ const TOUR_STEPS_DEF = [
    ru:['Линейка времени', 'Таймкоды и метки Входа/Выхода (I/O). Клик по пустому месту дорожки выделяет область, DEL её схлопывает.'],
    en:['The time ruler', 'Timecodes and In/Out marks (I/O). Clicking empty track space selects a region, DEL collapses it.']},
   {sel:'#tlTrackRows',
-   ru:['Дорожки и клипы', 'Клипы перетаскиваются, режутся лезвием, обрезаются двойным кликом (жёлтые рамки). На аудио-кликах — громкость по клику на динамик.'],
-   en:['Tracks and clips', 'Clips drag, cut with the blade, trim with a double-click (yellow frames). On audio clips — volume by clicking the speaker.']},
+   ru:['Дорожки и клипы', 'Клипы перетаскиваются, режутся лезвием, обрезаются двойным кликом. Край клипа / стык светится синим при выделении. ALT+T — фейдер звука 3 с (на стыке кроссфейд, в начале — из тишины). SHIFT+T — видео: dissolve или из чёрного. DEL удаляет переход.'],
+   en:['Tracks and clips', 'Drag, blade-cut, double-click to trim. Click a clip edge — blue glow. ALT+T — 3 s audio fade (crossfade or from silence). SHIFT+T — video dissolve or fade-from-black. DEL removes the transition.']},
   {sel:'#btnAutoCut',
    ru:['Автомонтаж', 'Нарезка камер от плейхеда. Стартовая камера: в начале блока максимум, в середине — втрое короче. Базовая может быть самой длинной. Остальные планы разной длины в диапазоне.'],
    en:['Auto-cut', 'Camera cutting from the playhead. Start camera: max at block start, 3× shorter in the middle. Base camera may take the longest shot. Other shots vary inside the length range.']},
@@ -13417,5 +14134,5 @@ try{
 
 updatePlayhead();
 </script>
-<script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a319eeaf1ced0985',t:'MTc4NzgyMTcxMw=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+<script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a31c94f709810b98',t:'MTc4Nzg0OTQ5Ng=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
