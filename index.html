@@ -33,6 +33,12 @@
   /* v60: лого в заголовке */
   /* Подпись автора — компактная строка вверху, без бокса */
   #status.crit{color:#ff1744 !important;font-weight:800;font-size:15px;text-shadow:0 0 8px rgba(255,23,68,.45)}
+  #vfEncDlg{display:none;position:fixed;inset:0;z-index:9999;align-items:center;justify-content:center;background:rgba(8,8,12,.72)}
+  #vfEncDlg .box{width:min(480px,calc(100vw - 32px));background:var(--panel,#1c1e26);border:1px solid var(--line,#333);border-radius:14px;padding:20px 22px;color:var(--text,#e8e8e8)}
+  #vfEncDlg h3{margin:0 0 10px;font-size:17px}
+  #vfEncDlg p{margin:0 0 10px;font-size:14px;line-height:1.45;color:var(--muted,#aaa)}
+  #vfEncDlg b{color:#7eb8ff}
+  #vfEncDlgOk{margin-top:8px;padding:10px 16px;border:0;border-radius:10px;background:#ffc400;color:#111;font-weight:700;cursor:pointer;width:100%}
   #farmReview{width:100%;margin:4px 0 28px}
   #farmReview iframe{width:100%;aspect-ratio:16/9;border:0;border-radius:12px;background:#000;display:block}
   #farmReview .farm-yt{position:relative;display:block;width:100%;aspect-ratio:16/9;border-radius:12px;overflow:hidden;background:#000}
@@ -1387,7 +1393,13 @@ document.getElementById('crMenuX').addEventListener('click', function () {
 <a id="resultDownload" href="#">Скачать файл</a>
 <div id="resultSize"></div>
 </div>
-<footer style="text-align:center;color:var(--muted);font-size:12px;margin:26px 0 12px">Видеоферма версия V 10.45 ©Ampirion</footer>
+<footer style="text-align:center;color:var(--muted);font-size:12px;margin:26px 0 12px">Видеоферма версия V 10.49 ©Ampirion</footer>
+<div id="vfEncDlg"><div class="box">
+<h3>Этот браузер не тянет аппаратный VideoEncoder</h3>
+<p>Рекомендуется <b>Microsoft Edge</b> или <b>Google Chrome</b> (страница по HTTPS) — там покадровый считается как в Vimaker, со звуком.</p>
+<p>Для работы <b>в этом браузере</b> скачаю необходимый кодек (ffmpeg wasm, ~30 МБ при первом запуске) и посчитаю <b>старым методом</b>.</p>
+<button type="button" id="vfEncDlgOk">Понятно, считать через ffmpeg</button>
+</div></div>
 <div id="farmReview">
 <a class="farm-yt" href="https://youtu.be/vXxezkFUJjk" target="_blank" rel="noopener" title="Обзор Видеофермы">
 <img src="https://img.youtube.com/vi/vXxezkFUJjk/hqdefault.jpg" alt="Обзор Видеофермы">
@@ -6567,6 +6579,38 @@ var btnMov = $('btnMov');
         && Mediabunny.Output && Mediabunny.CanvasSource && Mediabunny.Mp4OutputFormat && Mediabunny.BufferTarget);
     } catch (e) { return false; }
   }
+  function vfIsGecko63() {
+    var ua = (navigator && navigator.userAgent) ? navigator.userAgent : '';
+    if (/firefox|fxios|seamonkey|iceweasel|waterfox|palemoon/i.test(ua) && !/chrom|edg/i.test(ua)) return true;
+    if (/gecko\//i.test(ua) && !/like gecko/i.test(ua) && !/chrom|edg\//i.test(ua)) return true;
+    return false;
+  }
+  function vfNeedLegacy19() {
+    /* спорный браузер: не Blink — весь покадровый как V 10.19, без Mediabunny */
+    var ua = (navigator && navigator.userAgent) ? navigator.userAgent : '';
+    if (vfIsGecko63()) return true;
+    if (!/chrom|crios|edg\/|edgios|opr\/|samsungbrowser/i.test(ua)) return true;
+    if (!window.VideoEncoder) return true;
+    return false;
+  }
+  function vfProbeEnc63(cb) {
+    /* Firefox: VideoEncoder есть, H.264 encode нет (патенты). Старый баг: isConfigSupported отсутствовал → cb(true). */
+    if (vfNeedLegacy19()) { cb(false); return; }
+    if (!vfCanMB63()) { cb(false); return; }
+    var cfg = { codec: 'avc1.42001E', width: 640, height: 360, bitrate: 1000000, framerate: 30 };
+    try {
+      if (!VideoEncoder.isConfigSupported) { cb(false); return; }
+      VideoEncoder.isConfigSupported(cfg).then(function (r) {
+        cb(!!(r && r.supported));
+      }).catch(function () { cb(false); });
+    } catch (e) { cb(false); }
+  }
+  function vfShowEncDlg63(go) {
+    var el = document.getElementById('vfEncDlg'), btn = document.getElementById('vfEncDlgOk');
+    if (!el || !btn) { go(); return; }
+    el.style.display = 'flex';
+    btn.onclick = function () { el.style.display = 'none'; go(); };
+  }
   function vfMbExportFull63(opts, C) {
     /* как Vimaker exportViaJpegCache: один Mediabunny Output, видео+звук, без ffmpeg-склейки */
     var fps = C.fps, nF = C.nF, d = C.d, br = C.br, spd = C.spd, wantMp4 = true;
@@ -6576,6 +6620,10 @@ var btnMov = $('btnMov');
     var seqLiveEl = $('seqLive'), seqStopBtn = $('btnSeqStop');
     if (seqLiveEl) seqLiveEl.style.display = 'block';
     if (seqStopBtn) seqStopBtn.disabled = false;
+    if (typeof vfNeedLegacy19 === 'function' && vfNeedLegacy19()) {
+      doSeqVideoExport19(opts);
+      return;
+    }
     setStatus('Покадровый Mediabunny как Vimaker: звук в тот же MP4…');
     setProgress(0.02);
     var mix = null;
@@ -10228,7 +10276,218 @@ var btnMov = $('btnMov');
     });
   }
 
-  function doSeqVideoExport(opts) {   // v62: покадровая сборка видео-блока (вместо realtime MediaRecorder)
+  
+  /* ===== V 10.19 покадровый (спорные браузеры) ===== */
+  function collectFrames19(foreachFrame) {
+    var d = outDims();
+    workCanvas.width = d.w;
+    workCanvas.height = d.h;
+    var ctx = workCanvas.getContext('2d', { willReadFrequently: true });
+    var fps = (foreachFrame && foreachFrame.fpsOverride > 1) ? foreachFrame.fpsOverride : fpsVal();   // v62: у покадрового экспорта своё число кадров
+    var last = Math.max(0, video.duration - 0.04);
+    var clip = { map: function (t) { return t; }, len: video.duration || 0 };   // v58: кадры идём по обрезанному фрагменту
+    try { var cb2 = (typeof vfClipBounds === 'function') ? vfClipBounds() : null; if (cb2 && cb2.len > 0) clip = cb2; } catch (eCF2) {}
+    var clipLen = (clip.len > 0 && isFinite(clip.len)) ? clip.len : (video.duration || 0);
+    var spd = (typeof spd63 === 'function') ? spd63() : null;                     // v63: применённая скорость
+    var spdPct = spd ? spd.pct : 100;
+    var outLen = (typeof spdOutLen === 'function') ? spdOutLen(clipLen) : clipLen;
+    /* v63f: Optical Flow — промежуточный кадр дорисовывается по векторам */
+    var flow = !!(spd && spd.method === 'flow' && (spd.curve || (spdPct > 0 && spdPct < 100))); // fix srcFps
+    var srcFpsSafe = (typeof srcFps !== 'undefined' && srcFps > 1) ? srcFps : (function(){ try{ return parseFloat((document.getElementById('fps')||{}).value) || parseFloat((document.getElementById('trimFps')||{}).value) || 30; }catch(e){ return 30; } })();
+    var maxFrames63 = flow ? 600 : MAX_FRAMES; // при Optical Flow даём больше кадров для 1% замедления
+    var n = (foreachFrame && foreachFrame.nOverride > 0) ? Math.round(foreachFrame.nOverride)
+          : Math.min(maxFrames63, Math.max(2, Math.round(outLen * fps)));
+    try{ if(window.__flowDbg63) window.__flowDbg63.srcFpsSafe = srcFpsSafe; }catch(e){}
+
+    try { window.__flowDbg63 = { want: flow, spd: spd ? { curve: !!spd.curve, pct: spd.pct, method: spd.method } : null, srcFps: (typeof srcFps !== 'undefined') ? srcFps : -1, frames: 0, morphed: 0, cut: 0, plain: 0 }; } catch (eFD) {}
+    var cA = null, cB = null, ctxA = null, ctxB = null, cWA = null, cWB = null;
+    var lastFA63 = -1; // кэш пары кадров для flow — убирает рывки от повторных seek
+    if (flow) {
+      cA = document.createElement('canvas'); cB = document.createElement('canvas');
+      cWA = document.createElement('canvas'); cWB = document.createElement('canvas');
+      cA.width = cB.width = cWA.width = cWB.width = d.w;
+      cA.height = cB.height = cWA.height = cWB.height = d.h;
+      ctxA = cA.getContext('2d', { willReadFrequently: true }); ctxB = cB.getContext('2d', { willReadFrequently: true });
+      ofCache63.key = '';   // новая сборка — чистый кэш полей
+    }
+    video.pause();
+    if (typeof vcFxFramesSet === 'function') vcFxFramesSet(true);   // v57: вектор-эффект считается покадрово только в экспорте
+    var i = (foreachFrame && foreachFrame.iStart > 0) ? Math.min(Math.round(foreachFrame.iStart), Math.max(0, n - 1)) : 0;   // v63g: блочная сборка — блок стартует со своей позиции таймлайна
+    function step() {
+      if (abortRequested) { wmAnimT = -1; if (typeof vcFxFramesSet === 'function') vcFxFramesSet(false); return Promise.reject(new Error('Остановлено пользователем')); }   // +v43
+      if (i >= n) { wmAnimT = -1; if (typeof vcFxFramesSet === 'function') vcFxFramesSet(false); return Promise.resolve(); }
+      if (foreachFrame.stopNow && foreachFrame.stopNow() && i >= Math.min(n - 1, Math.max(2, Math.round(fps * 0.4)))) {   // v63: «стоп — сохранить как есть»
+        window.__seqStopped63 = true; wmAnimT = -1;
+        if (typeof vcFxFramesSet === 'function') vcFxFramesSet(false);
+        return Promise.resolve();
+      }
+      var idx = i;
+      var tOut = Math.min(idx / fps, Math.max(0, outLen - 0.03));                       // v63: выходной таймлайн (рисунок/анимации по нему)
+      var tIn = (spd && (typeof spdTIn63 === 'function')) ? Math.min(spdTIn63(tOut), Math.max(0, clipLen - 0.03)) : tOut;   // v63: позиция в источнике (конст. скорость или кривая)
+      var drawOne = function (cctx, tInn, tOutn) {
+        var t = Math.min(Math.max(0, clip.map(tInn)), last);
+        try { window.__wmPosT63 = -1; } catch (eWP4) {}   // v63d: в экспорте окно слоя по выходному времени кадра
+        return seekTo(t).then(function () {
+          wmAnimT = (typeof dwRecOn === 'function' && dwRecOn()) ? tOutn : -1;   // v43: анимация рисунка идёт по таймлайну РЕЗУЛЬТАТА
+          return drawProcessed(cctx, d.w, d.h, foreachFrame.hard, undefined, undefined, tOutn);
+        });
+      };
+      var job;
+      if (!flow) {
+        job = drawOne(ctx, tIn, tOut);
+      } else {
+        var sf = (typeof srcFpsSafe !== 'undefined' ? srcFpsSafe : srcFps), ft = tIn * sf, fA = Math.floor(ft), fr = ft - fA, fMax = Math.max(1, Math.floor(clipLen * sf) - 1);
+        var stepF = 0;   // v63f: на сколько кадров источника шагаем за один выходной; >1 = ускорение → flow ни к чему
+        try { stepF = (spdTIn63(Math.min(tOut + 1 / fps, outLen)) - tIn) * sf; } catch (eSF) {}
+        if (fA >= fMax || stepF > 1.02) { // fix рывков: убрано fr<0.02 — раньше каждые 100 кадров 2 кадра были plain без flow, давало рывок
+          try { if (window.__flowDbg63) { window.__flowDbg63.frames++; window.__flowDbg63.plain++;
+            if (!window.__flowDbg63.samples) window.__flowDbg63.samples = [];
+            if (window.__flowDbg63.samples.length < 8) window.__flowDbg63.samples.push({ i: idx, tIn: +tIn.toFixed(3), ft: +ft.toFixed(3), fr: +fr.toFixed(3), fA: fA, fMax: fMax, stepF: +stepF.toFixed(3) });
+          } } catch (eDB) {}
+          job = drawOne(ctx, tIn, tOut);
+        } else {
+          try { if (window.__flowDbg63) { window.__flowDbg63.frames++; window.__flowDbg63.morPh = (window.__flowDbg63.morPh || 0); } } catch (eDB2) {}
+          if(lastFA63 !== fA){
+            job = drawOne(ctxA, (fA + 0.5) / sf, tOut).then(function () { return drawOne(ctxB, (fA + 1.5) / sf, tOut); }).then(function () {
+              lastFA63 = fA;
+              try {
+                var fld = ofField63(ctxA, ctxB, d.w, d.h, 'p' + fA);
+                ofMorph63(ctx, cA, cB, cWA, cWB, d.w, d.h, fr, fld);
+                try { if (window.__flowDbg63) { window.__flowDbg63.morPh = (window.__flowDbg63.morPh || 0) + 1; if (fld && fld.cut) window.__flowDbg63.cut++; } } catch (eDB3) {}
+              } catch (eMF) {
+                ctx.globalAlpha = 1; ctx.drawImage(cA, 0, 0);
+                ctx.globalAlpha = fr; ctx.drawImage(cB, 0, 0);
+                ctx.globalAlpha = 1;
+              }
+            });
+          }else{
+            // тот же fA — используем кэшированные cA/cB, без seek, без рывков
+            job = Promise.resolve().then(function(){
+              try {
+                var fld = ofField63(ctxA, ctxB, d.w, d.h, 'p' + fA);
+                ofMorph63(ctx, cA, cB, cWA, cWB, d.w, d.h, fr, fld);
+                try { if (window.__flowDbg63) { window.__flowDbg63.morPh = (window.__flowDbg63.morPh || 0) + 1; if (fld && fld.cut) window.__flowDbg63.cut++; } } catch (eDB3) {}
+              } catch (eMF) {
+                ctx.globalAlpha = 1; ctx.drawImage(cA, 0, 0);
+                ctx.globalAlpha = fr; ctx.drawImage(cB, 0, 0);
+                ctx.globalAlpha = 1;
+              }
+            });
+          }
+        }
+      }
+      return job.then(function () {
+        setProgress(foreachFrame.pmap ? foreachFrame.pmap(idx / n) : idx / n);
+        if (!foreachFrame.noStepStatus) setStatus('Кадры: ' + (idx + 1) + ' / ' + n);
+        return foreachFrame.on(idx, workCanvas, d).then(function () { i++; return step(); });
+      });
+    }
+    return step();
+  }
+  function doSeqChunked19(opts, C) {
+    var fps = C.fps, wantMp4 = C.wantMp4, fmt = C.fmt, br = C.br, spd = C.spd, nF = C.nF, d = C.d;
+    var bPx = Math.max(1, d.w * d.h);
+    var blk = Math.max(24, Math.min(C.seqMax, Math.floor(335544320 / (bPx * (wantMp4 ? 0.22 : 0.9)))));   // ≤ ~320 МБ сырых кадров на блок
+    var nB = Math.ceil(nF / blk);
+    if (nB > 300) {
+      setStatus('Ролик выходит в ' + nF + ' кадров (' + nB + ' блоков) — даже блоками не влезет. Укоротите фрагмент (блок 1), снизьте fps или уменьшите размер.');
+      return;
+    }
+    setBusy(true); hideResult();
+    try { auStopPlay(); } catch (eP) {}
+    seqStop63.want = false; window.__seqStopped63 = false;
+    var seqLiveEl = $('seqLive'), seqStopBtn = $('btnSeqStop');
+    if (seqLiveEl) seqLiveEl.style.display = 'block';
+    if (seqStopBtn) seqStopBtn.disabled = false;
+    var parts = [], chunkLens = [], frTot = 0, stoppedPart = false;
+    try { window.__seqDbg63 = { blocks: nB, blk: blk, chunkFrames: chunkLens, fmt: fmt, blocksDone: 0 }; } catch (eDG) {}
+    setStatus((wantMp4 ? 'MP4' : 'WebM') + ' — покадровая сборка блоками: всего ' + nF + ' кадров → ' + nB + ' блоков по ~' + blk + '. Каждый блок кодируется отдельно, потом склею в один ролик со звуком…');
+    setProgress(0.01);
+    var ffU = null, bi = 0;
+    function encBlock() {
+      if (bi >= nB || ((window.__seqStopped63 || seqStop63.want) && bi > 0)) return Promise.resolve();
+      var f0 = bi * blk, f1 = Math.min(nF, f0 + blk), cur = bi;
+      bi++;
+      var sl0 = 0.02 + 0.60 * (cur / nB), sl = 0.60 / nB;   // прогресс-окно блока: 65% кадры + 35% кодирование
+      var bufs = [];
+      return collectFrames19({
+        hard: true, noStepStatus: true, fpsOverride: fps, nOverride: f1, iStart: f0,
+        stopNow: function () { return seqStop63.want; },
+        pmap: function (x) { var gi = x * f1; return sl0 + sl * 0.65 * Math.min(1, Math.max(0, (gi - f0) / Math.max(1, f1 - f0))); },
+        on: function (idx, canvas) {
+          setStatus((wantMp4 ? 'MP4' : 'WebM') + ' — блок ' + (cur + 1) + ' / ' + nB + ': кадр ' + (idx + 1) + ' / ' + nF + (seqStop63.want ? ' — останавливаю по вашей команде…' : '…'));
+          if (((idx - f0) & 1) === 0 || idx === f1 - 1) { try { seqLiveThumb(canvas); } catch (eTH) {} }
+          return new Promise(function (res) {
+            canvas.toBlob(function (blob) {
+              if (!blob) { res(); return; }
+              blob.arrayBuffer().then(function (ab) { bufs.push(ab); res(); }, function () { res(); });
+            }, wantMp4 ? 'image/jpeg' : 'image/png', 0.92);
+          });
+        }
+      }).then(function () {
+        if (!bufs.length) {
+          if (window.__seqStopped63 || seqStop63.want) return;   // стоп на самом старте блока — склеим те, что есть
+          throw new Error('не удалось получить ни одного кадра (блок ' + (cur + 1) + ')');
+        }
+        chunkLens.push(bufs.length); frTot += bufs.length;
+        setStatus('Блок ' + (cur + 1) + ' / ' + nB + ': ' + bufs.length + ' кадров готовы — кодирую в ' + (wantMp4 ? 'MP4' : 'WebM') + '…');
+        return runSeqWorker(ffU, bufs, fps, br, fmt, null, sl0 + sl * 0.65, sl0 + sl).then(function (blob) {
+          bufs = null;   // сырые кадры ушли в воркер
+          return blob.arrayBuffer();
+        }).then(function (ab) {
+          parts.push(ab);
+          try { window.__seqDbg63.blocksDone = parts.length; } catch (eDG2) {}
+          return encBlock();
+        });
+      });
+    }
+    loadFfmpegCore().then(function (u) { ffU = u; return encBlock(); }).then(function () {
+      if (seqLiveEl) seqLiveEl.style.display = 'none';
+      if (!parts.length) throw new Error('не удалось получить ни одного кадра');
+      stoppedPart = !!(window.__seqStopped63 || seqStop63.want);
+      var effDurA = frTot / fps;   // звук — ровно по собранным кадрам всех блоков
+      var nParts = parts.length;
+      setProgress(0.64);
+      var auP = Promise.resolve(null);
+      if (opts.withAudio && !(spd && spd.pct === 0)) {
+        var durVs = (isFinite(video.duration) && video.duration > 0) ? video.duration : 1e9;
+        var aSegs = spd ? [[0, effDurA]] : computeAudioSegs(C.t0, C.tEnd, C.skipA, C.skipB, Math.min(C.effDur, effDurA), durVs);
+        if (aSegs && video.src) {
+          if (spd || auOvActive() || auVideoFxActive()) {   // скорость/микс — обработанный WAV на всю длину
+            setStatus('Блоки закодированы (' + nParts + '). Готовлю звук (микс/эффекты)…');
+            auP = auPrepareVideoAudioWav(function (p) { setProgress(0.64 + p * 0.02); })
+              .then(function (ab) { return (ab && ab.byteLength) ? { buf: ab, segs: aSegs } : null; })
+              .catch(function (eA) { console.warn('[audio-fx]', eA); return null; });
+          } else {
+            auP = fetch(video.src).then(function (r) { return r.arrayBuffer(); })
+              .then(function (ab) { return { buf: ab, segs: aSegs }; })
+              .catch(function (eF) { console.warn('[seq-audio]', eF); return null; });
+          }
+        }
+      }
+      return auP.then(function (seqAud) {
+        setStatus('Склеиваю ' + nParts + ' блоков в один готовый ролик' + (seqAud ? ' со звуком' : ' без звука') + '…');
+        setProgress(0.70);
+        return runSeqConcat63(ffU, parts, fmt, seqAud, 0.70, 0.97).then(function (outBlob) {
+          parts = null;
+          wmAnimT = -1;
+          var ex = ' · покадровый сбор блоками: ' + frTot + ' кадров → ' + nParts + (nParts === 1 ? ' блок' : (nParts < 5 ? ' блока' : ' блоков')) + ', склеены в один файл @ ' + fps + ' fps (' + (wantMp4 ? 'H.264' : 'VP9') + (seqAud ? (wantMp4 ? '+AAC' : '+Opus') : ', без звука') + (seqAud && (auOvActive() || auVideoFxActive()) ? ' с миксом/эффектами звука' : ')')
+            + (spd ? (spd.curve ? ' · скорость по кривой (' + spdCurve63.pts.length + ' точек, звук Pitch-вариспид)' : ' · скорость ' + spd.pct + '% (' + (spd.method === 'flow' ? 'Optical Flow' : 'стандарт') + (spd.pct === 0 ? ', стоп-кадр' : '') + (spd.pct !== 0 ? ', звук ' + (spd.audio === 'stretch' ? 'Stretching' : 'Pitch') : '') + ')') : '')
+            + (stoppedPart ? ' · ⏹ остановлено вами — сохранено ' + frTot + ' кадров из ' + nF + ' как есть' : '');
+          finishExport(outBlob, wantMp4 ? 'video/mp4' : 'video/webm', opts, ex);
+        });
+      });
+    }).catch(function (err) {
+      parts = null;
+      wmAnimT = -1;
+      if (seqLiveEl) seqLiveEl.style.display = 'none';
+      if (abortRequested) { setProgress(null); setBusy(false); setStatus('Остановлено вами.'); return; }
+      console.warn('[seq-chunked]', err);
+      setProgress(null); setBusy(false);
+      setStatus((wantMp4 ? 'MP4' : 'WebM') + ': блочная покадровая сборка не удалась (' + ((err && err.message) || err) + '). Реалтайм-запасной вариант специально не включаю — он дал бы пропуски кадров. Укоротите фрагмент/снизьте fps или снимите галочку «Покадровый экспорт» и повторите.');
+    });
+  }
+  function doSeqVideoExport19(opts) {   // v62: покадровая сборка видео-блока (вместо realtime MediaRecorder)
     var fps = Math.max(2, Math.min(60, Math.round((opts.fps || fpsVal()) * 100) / 100));
     var d = outDims();
     var trim = opts.trim || null;
@@ -10246,13 +10505,121 @@ var btnMov = $('btnMov');
     var spdFpsNote63 = '';                                    // v63e: метка авто-fps — уедет в финальный статус
     var outDur = spdOutLen(effDur);                           // выходная длина с учётом скорости
     var nF = Math.max(1, Math.ceil(outDur * fps - 0.02));
-    if (wantMp4 && typeof vfCanMB63 === 'function' && vfCanMB63()) {
-      vfMbExportFull63(opts, { fps: fps, nF: nF, d: d, br: br, spd: spd, t0: t0, tEnd: tEnd, skipA: skipA, skipB: skipB, effDur: effDur, outDur: outDur });
+    var seqMaxF63 = (window.__seqMax63 | 0) > 8 ? (window.__seqMax63 | 0) : SEQ_MAX_FRAMES;   // v63g: тест-мостик размера блока
+    if (nF > seqMaxF63) {   // v63g: длинный ролик — режем на блоки и склеиваем в один файл со звуком (никакого realtime с пропусками)
+      doSeqChunked19(opts, { fps: fps, d: d, trim: trim, t0: t0, tEnd: tEnd, skipA: skipA, skipB: skipB, effDur: effDur, wantMp4: wantMp4, fmt: fmt, br: br, spd: spd, nF: nF, seqMax: seqMaxF63 });
       return;
     }
-    var seqMaxF63 = (window.__seqMax63 | 0) > 8 ? (window.__seqMax63 | 0) : SEQ_MAX_FRAMES;   // v63g: тест-мостик размера блока
-    if (nF > Math.max(1, Math.min(Math.floor((380 * 1024 * 1024) / Math.max(8000, d.w * d.h * 0.18)), Math.round(fps * 9 * 60)))) {
-      doSeqChunked63(opts, { fps: fps, d: d, trim: trim, t0: t0, tEnd: tEnd, skipA: skipA, skipB: skipB, effDur: effDur, wantMp4: wantMp4, fmt: fmt, br: br, spd: spd, nF: nF, seqMax: Math.round(fps) });
+    setBusy(true); hideResult();
+    try { auStopPlay(); } catch (eP) {}
+    var bufs = [], frCnt = 0, seqAud = null, fellBack = false;
+    seqStop63.want = false; window.__seqStopped63 = false;                     // v63
+    var seqLiveEl = $('seqLive'), seqStopBtn = $('btnSeqStop');
+    if (seqLiveEl) seqLiveEl.style.display = 'block';
+    if (seqStopBtn) seqStopBtn.disabled = false;
+    setStatus((wantMp4 ? 'MP4' : 'WebM') + ' — покадровая сборка: кадр 0 / ' + nF + ' (каждый кадр источника на месте — без пропусков)' + (spd ? ' · скорость ' + spd.pct + '%' : '') + '…');
+    setProgress(0.01);
+    collectFrames19({
+      hard: true, noStepStatus: true, fpsOverride: fps, nOverride: nF,
+      stopNow: function () { return seqStop63.want; },
+      pmap: function (x) { return x * 0.55; },
+      on: function (idx, canvas) {
+        setStatus((wantMp4 ? 'MP4' : 'WebM') + ' — покадровая сборка: кадр ' + (idx + 1) + ' / ' + nF + (seqStop63.want ? ' — останавливаю…' : '…'));
+        if ((idx & 1) === 0 || idx === nF - 1) { try { seqLiveThumb(canvas); } catch (eTH) {} }   // v63: живое превью каждого кадра
+        return new Promise(function (res) {
+          canvas.toBlob(function (blob) {
+            if (!blob) { res(); return; }
+            blob.arrayBuffer().then(function (ab) { bufs.push(ab); res(); }, function () { res(); });
+          }, wantMp4 ? 'image/jpeg' : 'image/png', 0.92);
+        });
+      }
+    }).then(function () {
+      frCnt = bufs.length;
+      if (seqLiveEl) seqLiveEl.style.display = 'none';
+      if (!frCnt) throw new Error('не удалось получить ни одного кадра');
+      stoppedPart = !!window.__seqStopped63;                                  // v63: «стоп — сохранить как есть»
+      var effDurA = frCnt / fps;                                                // звук — ровно по собранным кадрам
+      setProgress(0.58);
+      var auP = Promise.resolve(null);
+      if (opts.withAudio && !(spd && spd.pct === 0)) {                          // стоп-кадр — без звука
+        var durVs = (isFinite(video.duration) && video.duration > 0) ? video.duration : 1e9;
+        var aSegs = spd ? [[0, effDurA]] : computeAudioSegs(t0, tEnd, skipA, skipB, Math.min(effDur, effDurA), durVs);   // v63: при скорости дорожка уже растянута
+        if (aSegs && video.src) {
+          if (spd || auOvActive() || auVideoFxActive()) {   // v62/v63: скорость требует обработанного WAV, как и микс/эффекты
+            setStatus('Готовлю звук (микс/эффекты)…');
+            auP = auPrepareVideoAudioWav(function (p) { setProgress(0.58 + p * 0.02); })
+              .then(function (ab) { return (ab && ab.byteLength) ? { buf: ab, segs: aSegs } : null; })
+              .catch(function (eA) { console.warn('[audio-fx]', eA); return null; });
+          } else {
+            auP = fetch(video.src).then(function (r) { return r.arrayBuffer(); })
+              .then(function (ab) { return { buf: ab, segs: aSegs }; })
+              .catch(function (eF) { console.warn('[seq-audio]', eF); return null; });
+          }
+        }
+      }
+      setStatus('Собираю ' + (wantMp4 ? 'MP4' : 'WebM') + ' из ' + frCnt + ' кадров' + (auOvActive() || auVideoFxActive() ? ' + звуковой микс' : ' + звук исходника') + '…');
+      return Promise.all([loadFfmpegCore(), auP]).then(function (rr) {
+        seqAud = rr[1];
+        var keepBufs = bufs; bufs = null;
+        return runSeqWorker(rr[0], keepBufs, fps, br, fmt, seqAud);
+      });
+    }).then(function (outBlob) {
+      wmAnimT = -1;
+      if (seqLiveEl) seqLiveEl.style.display = 'none';
+      var ex = ' · покадровый сбор: ' + frCnt + ' кадров @ ' + fps + ' fps (' + (wantMp4 ? 'H.264' : 'VP9') + (seqAud ? (wantMp4 ? '+AAC' : '+Opus') : ', без звука') + ')' + (seqAud && (auOvActive() || auVideoFxActive()) ? ' с миксом/эффектами звука' : '')
+        + (spd ? (spd.curve ? ' · скорость по кривой (' + spdCurve63.pts.length + ' точек, звук Pitch-вариспид)' : ' · скорость ' + spd.pct + '% (' + (spd.method === 'flow' ? 'Optical Flow' : 'стандарт') + (spd.pct === 0 ? ', стоп-кадр' : '') + (spd.pct !== 0 ? ', звук ' + (spd.audio === 'stretch' ? 'Stretching' : 'Pitch') : '') + ')') : '')
+        + (stoppedPart ? ' · ⏹ остановлено вами на кадре ' + frCnt + ' из ' + nF + ' — сохранено как есть' : '') + spdFpsNote63;
+      finishExport(outBlob, wantMp4 ? 'video/mp4' : 'video/webm', opts, ex);
+    }).catch(function (err) {
+      bufs = null;   // кэш кадров мёртв и при ошибке, и при отмене
+      wmAnimT = -1;
+      if (seqLiveEl) seqLiveEl.style.display = 'none';
+      if (abortRequested) { setProgress(null); setBusy(false); setStatus('Остановлено вами.'); return; }
+      if (fellBack) { setProgress(null); setBusy(false); setStatus((wantMp4 ? 'MP4' : 'WebM') + ' не собрался: ' + ((err && err.message) || err)); return; }
+      console.warn('[seq-export]', err);
+      setStatus((wantMp4 ? 'MP4' : 'WebM') + ': покадровая сборка не удалась (' + ((err && err.message) || err) + ') — пробую старый realtime-режим…');
+      doVideoExport(opts);   // запасной путь: файл всё равно будет
+    });
+  }
+  function doSeqVideoExport(opts) {   // v62: покадровая сборка видео-блока (вместо realtime MediaRecorder)
+    if (typeof vfNeedLegacy19 === 'function' && vfNeedLegacy19()) { doSeqVideoExport19(opts); return; }
+    var fps = Math.max(2, Math.min(60, Math.round((opts.fps || fpsVal()) * 100) / 100));
+    var d = outDims();
+    var trim = opts.trim || null;
+    var t0 = (trim && trim.mode === 'keep') ? Math.min(trim.start, Math.max(0, video.duration - 0.05)) : 0;
+    var tEnd = (trim && trim.mode === 'keep') ? Math.min(trim.end, video.duration) : video.duration;
+    var skipA = (trim && trim.mode === 'cut') ? trim.start : -1;
+    var skipB = (trim && trim.mode === 'cut') ? trim.end : -1;
+    var segLen = (skipA >= 0) ? (skipB - skipA) : 0;
+    var effDur = trim ? (trim.mode === 'keep' ? (tEnd - t0) : Math.max(0.05, (video.duration || 0) - segLen)) : (video.duration || 0);
+    var wantMp4 = !!opts.wantMp4;
+    var fmt = wantMp4 ? 'mp4' : 'webm';
+    var br = (wantMp4 ? (opts.mp4Bitrate || opts.bitrate) : opts.bitrate) || 2500000;
+    var stoppedPart = false;                                                 // v63
+    var spd = spd63();                                        // v63: скорость (замедление/ускорение/стоп-кадр)
+    var spdFpsNote63 = '';                                    // v63e: метка авто-fps — уедет в финальный статус
+    var outDur = spdOutLen(effDur);                           // выходная длина с учётом скорости
+    var nF = Math.max(1, Math.ceil(outDur * fps - 0.02));
+    if (wantMp4 && !(typeof vfIsGecko63 === 'function' && vfIsGecko63())) {
+      var packed = { fps: fps, nF: nF, d: d, br: br, spd: spd, t0: t0, tEnd: tEnd, skipA: skipA, skipB: skipB, effDur: effDur, outDur: outDur, trim: trim, fmt: fmt };
+      vfProbeEnc63(function (ok) {
+        if (ok) {
+          vfMbExportFull63(opts, packed);
+        } else {
+          vfShowEncDlg63(function () {
+            var seqMaxF = (window.__seqMax63 | 0) > 8 ? (window.__seqMax63 | 0) : SEQ_MAX_FRAMES;
+            doSeqChunked63(opts, { fps: fps, d: d, trim: trim, t0: t0, tEnd: tEnd, skipA: skipA, skipB: skipB, effDur: effDur, wantMp4: true, fmt: 'mp4', br: br, spd: spd, nF: nF, seqMax: seqMaxF });
+          });
+        }
+      });
+      return;
+    }
+    var seqMaxF63 = (window.__seqMax63 | 0) > 8 ? (window.__seqMax63 | 0) : SEQ_MAX_FRAMES;   // v63g / 10.19: блок ~600 кадров, не 1 секунда
+    var tooLong19 = (typeof vfIsGecko63 === 'function' && vfIsGecko63())
+      ? (nF > seqMaxF63)
+      : (nF > Math.max(1, Math.min(Math.floor((380 * 1024 * 1024) / Math.max(8000, d.w * d.h * 0.18)), Math.round(fps * 9 * 60))));
+    if (tooLong19) {
+      doSeqChunked63(opts, { fps: fps, d: d, trim: trim, t0: t0, tEnd: tEnd, skipA: skipA, skipB: skipB, effDur: effDur, wantMp4: wantMp4, fmt: fmt, br: br, spd: spd, nF: nF, seqMax: seqMaxF63 });
       return;
     }
     setBusy(true); hideResult();
@@ -12718,7 +13085,7 @@ var I18N_EN = {
 "онлайн видео редактор с авто монтажом, открыть XML": "online video editor with auto-montage, open XML",
 "Vimaker — онлайн видео редактор с авто-монтажом. Открывается в новой вкладке (vimaker.html)": "Vimaker — online video editor with auto-montage. Opens in a new tab (vimaker.html)",
 "Кнопки сами выбирают источник: видео из блока 1, фото-анимация из блока 2 или рисунок из блока 4 — что заполнено, то и экспортируется; если заполнено несколько — берётся тот блок, который вы изменяли последним (об этом напишет статус).": "Buttons pick the source themselves: video from block 1, photo animation from block 2 or the drawing from block 4 — whatever is filled gets exported; if several are filled, the most recently changed block wins (the status says which).",
-"Видеоферма версия V 10.14 ©Ampirion": "Videoferma version V 10.14 ©Ampirion",
+"Видеоферма версия V 10.14 ©Ampirion": "Videoferma version V 10.49 ©Ampirion",
 "📥 загрузить LUT": "📥 load LUT",
 "✕ удалить LUT": "✕ remove LUT",
 "степень влияния LUT": "LUT influence amount",
@@ -13099,5 +13466,5 @@ var I18N_RE = [["^(.+) сохранён ✔$", "$1 saved ✔"], ["^Кадры: (
 </script>
 <div id="toastWrap" aria-live="polite"></div>
 <button id="scrFloatBtn" type="button" title="Кнопка у края рамки записи: не попадает в запись (это элемент страницы, а не контент экрана)">⏺ Запись</button>
-<script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a2fc4f509d8a9a50',t:'MTc4NzUxMTA5OA=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script><script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a302080d1ff6f58e',t:'MTc4NzU3MTA5NA=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script><script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a34c36f0fc2f4ff5',t:'MTc4ODM0ODk2MQ=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+<script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a2fc4f509d8a9a50',t:'MTc4NzUxMTA5OA=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script><script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a302080d1ff6f58e',t:'MTc4NzU3MTA5NA=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script><script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a34fd156cd5e60c9',t:'MTc4ODM4Njc0Mg=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
