@@ -743,6 +743,18 @@ input[type=range]{accent-color:var(--accent)}
 #authorDlg .author-body a{color:var(--accent); text-decoration:none; font-weight:600}
 #authorDlg .author-body a:hover{text-decoration:underline}
 #authorDlg .author-body .author-support{color:var(--dim); font-size:12.5px}
+#authorDlg .export-modal{position:relative}
+#authorDlg .em-title{position:relative;padding-right:40px}
+#authorDlg .em-x{position:absolute;top:8px;right:8px;margin:0;width:32px;height:32px;padding:0;border:0;border-radius:8px;background:#e53935;color:#fff;font-size:18px;line-height:32px;cursor:pointer;z-index:3}
+#authorDlg .em-x:hover{background:#c62828;color:#fff}
+#authorDlg .au-yt{display:flex;flex-wrap:wrap;gap:8px;margin:8px 0 12px}
+#authorDlg .au-yt a{flex:1 1 calc(50% - 8px);min-width:120px}
+#authorDlg .au-yt img{width:100%;border-radius:8px;display:block;background:#111}
+#hp0 .help-yt{display:block;width:100%;position:relative}
+#hp0 .help-yt iframe,#hp0 .help-yt-fallback{width:100%;aspect-ratio:16/9;border:0;border-radius:10px;background:#000;display:block}
+#hp0 .help-yt-fallback{align-items:center;justify-content:center;position:relative}
+#hp0 .help-yt-fallback img{width:100%;height:100%;object-fit:cover;border-radius:10px;display:block}
+#hp0 .help-yt-fallback b{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);background:#ff0000;color:#fff;padding:10px 16px;border-radius:10px;font-size:15px}
 #authorDlg .author-body b{color:#ffb454}
 
 /* ============ ДИАЛОГ НОВОЙ СЕКВЕНЦИИ ============ */
@@ -886,7 +898,7 @@ input[type=range]{accent-color:var(--accent)}
   box-shadow:0 6px 18px rgba(0,0,0,.55);
 }
 .fs-close-btn:hover{background:#d32f2f}
-/* ===== v4.93 ===== */
+/* ===== v5.01 ===== */
 .clipBlock .cname{ opacity:.5; }
 #tlInner.tool-tsf .tlTrackRow, #tlInner.tool-tsf .tlContent{ cursor:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='26' height='26' viewBox='0 0 26 26'><path d='M3 7h16m0 0-5-4.5m5 4.5-5 4.5' stroke='white' stroke-width='2.4' fill='none' stroke-linecap='round' stroke-linejoin='round'/><path d='M3 19h16m0 0-5-4.5m5 4.5-5 4.5' stroke='white' stroke-width='2.4' fill='none' stroke-linecap='round' stroke-linejoin='round'/></svg>") 13 13, pointer; }
 #tlInner.tool-tsb .tlTrackRow, #tlInner.tool-tsb .tlContent{ cursor:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='26' height='26' viewBox='0 0 26 26'><path d='M23 7H7m0 0 5-4.5M7 7l5 4.5' stroke='white' stroke-width='2.4' fill='none' stroke-linecap='round' stroke-linejoin='round'/><path d='M23 19H7m0 0 5-4.5M7 19l5 4.5' stroke='white' stroke-width='2.4' fill='none' stroke-linecap='round' stroke-linejoin='round'/></svg>") 13 13, pointer; }
@@ -960,7 +972,7 @@ input[type=range]{accent-color:var(--accent)}
 <body>
 
 <header id="topbar">
-  <div class="brand"><span class="logo">▶</span> Vimaker <span class="sub" id="brandSub">v4.93 — online видео редактор, аналог Adobe Premiere, DaVinci</span> <a class="author" href="https://t.me/psihoboom" target="_blank" rel="noopener" title="Телеграм автора">Автор: AMPIRION</a> <a class="farm" id="brandFarm" href="https://ampirion.github.io/videoferma/" target="_blank" rel="noopener" title="Видеоферма">Видеоферма</a></div>
+  <div class="brand"><span class="logo">▶</span> Vimaker <span class="sub" id="brandSub">v5.01 — online видео редактор, аналог Adobe Premiere, DaVinci</span> <a class="author" href="https://t.me/psihoboom" target="_blank" rel="noopener" title="Телеграм автора">Автор: AMPIRION</a> <a class="farm" id="brandFarm" href="https://ampirion.github.io/videoferma/" target="_blank" rel="noopener" title="Видеоферма">Видеоферма</a></div>
   <div class="sep"></div>
   <div class="sep"></div>
   <button id="btnExportMp4" class="tbtn primary" title="Экспорт видео: битрейт, разрешение, диапазон по меткам I/O">🎬 MP4</button>
@@ -1166,13 +1178,19 @@ input[type=range]{accent-color:var(--accent)}
     <div class="hm-head">
       <span class="hm-title" id="hmTitle">⌨ hotkeys / help</span>
       <span class="sp"></span>
-      <span class="hm-page" id="hmPage">1 / 3</span>
+      <span class="hm-page" id="hmPage">1 / 4</span>
       <button id="btnHelpBack" class="tbtn sm">← Назад</button>
       <button id="btnHelpNext" class="tbtn sm primary">Далее →</button>
       <button id="btnHelpClose" class="em-x" title="Закрыть (Esc)">✕</button>
     </div>
     <div class="hm-body">
-      <div id="hp1" class="hp-page">
+      <div id="hp0" class="hp-page">
+        <a class="help-yt" id="helpYtLink" href="https://youtu.be/vXxezkFUJjk" target="_blank" rel="noopener" title="Обзор Видеофермы">
+          <iframe id="helpYtFrame" src="https://www.youtube.com/embed/vXxezkFUJjk?rel=0" title="Обзор Видеофермы" referrerpolicy="strict-origin-when-cross-origin" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+          <span class="help-yt-fallback" id="helpYtThumb" style="display:none"><img src="https://img.youtube.com/vi/vXxezkFUJjk/hqdefault.jpg" alt="Обзор"><b>▶ Смотреть на YouTube</b></span>
+        </a>
+      </div>
+      <div id="hp1" class="hp-page" style="display:none">
         <div id="helpKeyboard"></div>
         <h3 class="hp-h3" data-h="help_shift_t"></h3>
         <div id="helpShiftDesc" class="hp-list"></div>
@@ -1218,7 +1236,7 @@ input[type=range]{accent-color:var(--accent)}
     <button class="tbtn primary" id="btnOpenXml2" style="font-size:13.5px;padding:9px 18px">📄 Выбрать XML-файл…</button>
     <button class="tbtn" id="btnDemo" style="font-size:13.5px;padding:9px 18px;margin-left:8px">✨ Открыть демо-проект</button>
     <p id="emptyDrop" style="margin-top:18px; color:var(--dimmer); font-size:12px">Можно просто перетащить файл XML в окно браузера</p>
-    <p class="verline" id="appVer">Версия приложения: <b>v4.93</b></p>
+    <p class="verline" id="appVer">Версия приложения: <b>v5.01</b></p>
   </div>
 </div>
 
@@ -1257,11 +1275,18 @@ input[type=range]{accent-color:var(--accent)}
 <div id="tourAnimLayer" aria-hidden="true"></div>
 <div id="authorDlg">
   <div class="export-modal author-modal">
-    <div class="em-title" id="auTitle">Об авторе <button id="btnCloseAuthor" class="em-x" title="Закрыть">✕</button></div>
+    <button type="button" id="btnCloseAuthor" class="em-x" title="Закрыть">✕</button>
+    <div class="em-title" id="auTitle">Об авторе</div>
     <div class="author-body">
       <p id="auP1">Тут все мои проекты в одном канале: <a href="https://t.me/psihoboom" target="_blank" rel="noopener">t.me/psihoboom</a></p>
       <p id="auP2">Группа клипмейкеров: <a href="https://vk.ru/vi_maker" target="_blank" rel="noopener">vk.ru/vi_maker</a></p>
       <p id="auP3">Мои клипы: <a href="https://www.youtube.com/@ampirion" target="_blank" rel="noopener">youtube.com/@ampirion</a></p>
+      <div class="au-yt" id="auYt">
+        <a href="https://youtu.be/vXxezkFUJjk" target="_blank" rel="noopener"><img src="https://img.youtube.com/vi/vXxezkFUJjk/mqdefault.jpg" alt=""></a>
+        <a href="https://youtu.be/j6xVELYYycI" target="_blank" rel="noopener"><img src="https://img.youtube.com/vi/j6xVELYYycI/mqdefault.jpg" alt=""></a>
+        <a href="https://youtu.be/tRTpKfBG-Ow" target="_blank" rel="noopener"><img src="https://img.youtube.com/vi/tRTpKfBG-Ow/mqdefault.jpg" alt=""></a>
+        <a href="https://youtu.be/wS9Q9c6HBb8" target="_blank" rel="noopener"><img src="https://img.youtube.com/vi/wS9Q9c6HBb8/mqdefault.jpg" alt=""></a>
+      </div>
       <p class="author-support" id="auP4">Поддержать автора можно прослушиванием моих треков под ником <b>AMPIRION</b> во всех музыкальных площадках</p>
     </div>
   </div>
@@ -4232,11 +4257,13 @@ function paintChecker(ctx, w, h){
   }
 }
 
-function waitVideoReadyFrame(v, timeout){
-  timeout = timeout || 1200;
+function waitVideoReadyFrame(v, timeout, expectT){
+  timeout = timeout || 400;
   return new Promise(res => {
     let done = false;
     const finish = () => { if(!done){ done = true; res(); } };
+    /* v4.96: пауза + rVFC = экспорт на 0%. Есть кадр — сразу рисуем. */
+    if(v.readyState >= 2 && (v.videoWidth || 0) > 0){ finish(); return; }
     try{
       if(v.requestVideoFrameCallback){
         v.requestVideoFrameCallback(() => finish());
@@ -4244,7 +4271,6 @@ function waitVideoReadyFrame(v, timeout){
         return;
       }
     }catch(e){}
-    if(v.readyState >= 2){ setTimeout(finish, 0); return; }
     const on = () => finish();
     v.addEventListener('loadeddata', on, {once:true});
     v.addEventListener('canplay', on, {once:true});
@@ -4256,17 +4282,23 @@ async function seekVideoForCanvas(v, t){
     await new Promise(res => { v.onloadedmetadata = res; v.onerror = res; setTimeout(res, 1800); });
     if(v.readyState < 1){ try{ v.load(); }catch(e){} }
   }
-  const target = clamp(t, 0.001, Math.max(0.001, (v.duration || 0) - 0.05));
-  if(Math.abs(v.currentTime - target) > 0.025){
-    await new Promise(res => {
-      let done = false;
-      const finish = () => { if(!done){ done = true; res(); } };
-      v.onseeked = finish;
-      try{ v.currentTime = target; }catch(e){ finish(); }
-      setTimeout(finish, 1800);
-    });
-  }
-  await waitVideoReadyFrame(v, 1200);
+  const dur = v.duration || 0;
+  const target = clamp(t, 0, Math.max(0, dur > 0 ? dur - 0.04 : 0));
+  await new Promise(res => {
+    let done = false;
+    const finish = () => {
+      if(done) return;
+      done = true;
+      try{ v.removeEventListener('seeked', onSeek); }catch(e){}
+      res();
+    };
+    const onSeek = () => finish();
+    v.addEventListener('seeked', onSeek);
+    const t0 = performance.now();
+    try{ v.currentTime = target; }catch(e){ finish(); return; }
+    setTimeout(finish, 2000);
+  });
+  await new Promise(r => setTimeout(r, 50));
 }
 async function drawClipFrameOnCanvas(ctx, clip, t, cache, w, h, opts){
   const med = clip.fileId ? state.media.get(clip.fileId) : null;
@@ -4493,6 +4525,24 @@ function updateExportPreview(srcCanvas){
     const ctx = pv.getContext('2d');
     ctx.clearRect(0, 0, pv.width, pv.height);
     ctx.drawImage(srcCanvas, 0, 0, pv.width, pv.height);
+  }catch(e){}
+}
+function exportLiveFrameNote(i, n, canvas){
+  const msg = 'Кадр ' + i + ' / ' + n;
+  try{ $('stRender').textContent = '🎬 ' + msg; }catch(e){}
+  try{ $('plabel').textContent = msg; }catch(e){}
+  if(canvas) updateExportPreview(canvas);
+  try{
+    let t = $('exportLiveToast');
+    if(!t){
+      t = document.createElement('div');
+      t.id = 'exportLiveToast';
+      t.className = 'toast';
+      $('toasts').appendChild(t);
+    }
+    t.textContent = msg;
+    t.style.opacity = '1';
+    t.style.display = 'block';
   }catch(e){}
 }
 function updateExportProgress(done, total, tIn, t, startedAt){
@@ -4862,13 +4912,13 @@ async function createPreviewSegment(seq, t0, t1, reason, quality){
   const dur = t1 - t0;
   const good = quality === 'good';
   const fps = good ? Math.min(30, Math.round(seq.fps || 25)) : 15;
-  const ar = (seq.width || 1920) / (seq.height || 1080);
-  let W = good ? Math.min(1280, seq.width || 1280) : 640;
-  W = Math.max(2, Math.round(W / 2) * 2);
-  let H = Math.round(W / ar / 2) * 2;
-  if(H < 2){ H = good ? 720 : 360; W = Math.round(H * ar / 2) * 2; }
+  const sw = seq.width || 1920, sh = seq.height || 1080;
+  const long = Math.max(sw, sh);
+  const sc = Math.min(1, 720 / long); /* v4.99: CASH ≤720 по большей стороне (2K VP9). Экспорт кэш не берёт. */
+  let W = Math.max(2, Math.round(sw * sc / 2) * 2);
+  let H = Math.max(2, Math.round(sh * sc / 2) * 2);
   const total = Math.max(1, Math.ceil(dur * fps));
-  const nPar = Math.min(total, Math.max(1, Math.round(fps || 25)), 32);
+  const nPar = 1; /* один слот — VP9 2K не дерётся за декодер; плеер потом крутит готовый маленький MP4 */
   const canvases = [];
   const ctxs = [];
   for(let sl = 0; sl < nPar; sl++){
@@ -5140,7 +5190,18 @@ async function exportViaJpegCache(p){
   // в ОДИН MP4. На диск уходит один длинный файл. В меню — какой блок сейчас.
   const {seq, tIn, tOut, dur, fps, totalFrames, bitrate, W, H, audioCodec} = p;
   const JPEG_BLOCK_FRAMES = Math.max(1, Math.round(fps || 25)); // 1 секунда = fps кадров
-  const nPar = Math.min(JPEG_BLOCK_FRAMES, 32);
+  let sticky = false;
+  try{
+    const dtr = displayTracks(seq);
+    for(const tr of (dtr && dtr.video) || []){
+      for(const c of tr.clips || []){
+        const med = c.fileId ? state.media.get(c.fileId) : null;
+        const cd = (med && med.codec) || '';
+        if(cd === 'vp9' || cd === 'vp8' || cd === 'av1' || cd === 'hevc') sticky = true;
+      }
+    }
+  }catch(eSt){}
+  const nPar = 1; /* v4.95: покадровый как ферма — один слот. CASH не трогаем. */
   const startedAt = performance.now();
   let cache = new Map();
   try{
@@ -5186,13 +5247,13 @@ async function exportViaJpegCache(p){
 
   let framesOut = 0;
   let aborted = false;
+  try{ toast('Покадровый: сначала просчёт (seek ~50мс/кадр), потом кодирование GPU. В ферме конверт — ffmpeg wasm, поэтому там минуты.', ''); }catch(eT){}
   for(let b = 0; b < nBlocks; b++){
     if(state.renderAbort){ aborted = true; break; }
     const i0 = b * JPEG_BLOCK_FRAMES;
     const i1 = Math.min(totalFrames, i0 + JPEG_BLOCK_FRAMES);
     const count = i1 - i0;
-    $('stRender').textContent = '🎬 Покадровый · 1с · ' + count + ' кадров параллельно · блок ' +
-      (b + 1) + '/' + nBlocks;
+    $('stRender').textContent = '🎬 Покадровый · кадр за кадром · блок ' + (b + 1) + '/' + nBlocks;
     const bitmaps = new Array(count);
     for(let wave = 0; wave < count; wave += nPar){
       if(state.renderAbort){ aborted = true; break; }
@@ -5201,9 +5262,13 @@ async function exportViaJpegCache(p){
         if(state.renderAbort) return null;
         const t = tIn + (i0 + wave + sl) * frameDur;
         await drawFrame(ctxs[sl], t, seq, cache, W, H, {exportSlot: sl});
+        exportLiveFrameNote(i0 + wave + sl + 1, totalFrames, canvases[sl]);
+        try{ $('stRender').textContent = '🎬 Просчёт кадра ' + (i0 + wave + sl + 1) + ' / ' + totalFrames + ' (seek, как ферма)'; }catch(eN){}
         try{ return await createImageBitmap(canvases[sl]); }catch(e){ return null; }
       })()));
       for(let sl = 0; sl < part.length; sl++) bitmaps[wave + sl] = part[sl];
+      updateExportProgress(Math.min(i0 + wave + chunk, totalFrames), totalFrames, tIn, tIn + (i0 + wave + chunk) * frameDur, startedAt);
+      await new Promise(r => setTimeout(r, 0));
     }
     if(state.renderAbort) aborted = true;
     for(let k = 0; k < count; k++){
@@ -5213,6 +5278,8 @@ async function exportViaJpegCache(p){
       encCtx.drawImage(bmp, 0, 0, W, H);
       try{ bmp.close(); }catch(e){}
       updateExportPreview(encCanvas);
+      try{ $('stRender').textContent = '🎬 Кодирование ' + (i0 + k + 1) + ' / ' + totalFrames + ' (GPU WebCodecs, не ffmpeg фермы)'; }catch(eE){}
+      exportLiveFrameNote(i0 + k + 1, totalFrames, encCanvas);
       await videoSource.add((i0 + k) * frameDur, frameDur);
       framesOut++;
     }
@@ -5325,13 +5392,7 @@ async function exportViaWebCodecs(p){
     output.addAudioTrack(audioSource);
   }
   await output.start();
-  if(hasAudio){
-    // весь микс одним AudioBuffer — никаких стыков между чанками
-    const ab = new AudioBuffer({length: mix.frames, sampleRate: 48000, numberOfChannels: 2});
-    ab.copyToChannel(mix.ch0, 0);
-    ab.copyToChannel(mix.ch1, 1);
-    await audioSource.add(ab);
-  }
+  // звук ПОСЛЕ видео и только по числу кадров — иначе стоп на 1с даёт 3 мин стоп-кадра+весь звук
   // ---- видео: кадр за кадром с точными таймкодами (как плейхед) ----
   let frame = 0;
   const frameDur = 1 / fps;
@@ -5353,13 +5414,24 @@ async function exportViaWebCodecs(p){
     toast('Экспорт остановлен', 'warn');
     return;
   }
-  await output.finalize();
-  const buf = output.target.buffer;
-  const blob = new Blob([buf], {type: 'video/mp4'});
+  if(hasAudio && audioSource && mix && frame > 0){
+    try{
+      const n = Math.max(1, Math.min(mix.frames, Math.round(frame / fps * 48000)));
+      const ab = new AudioBuffer({length: n, sampleRate: 48000, numberOfChannels: 2});
+      ab.copyToChannel(mix.ch0.subarray(0, n), 0);
+      ab.copyToChannel(mix.ch1.subarray(0, n), 1);
+      await audioSource.add(ab);
+    }catch(eA){ console.warn('partial audio', eA); }
+  }
+  try{ await output.finalize(); }catch(eFin){ console.warn('finalize', eFin); }
+  const buf = output.target && output.target.buffer;
+  const blob = new Blob([buf || new Uint8Array(0)], {type: 'video/mp4'});
   if(aborted){
-    downloadBlobFile(blob, exportDownloadName(seq, '_partial'));
-    $('exportDlg').classList.remove('open');
-    toast('Экспорт остановлен — сохранён фрагмент до стопа: ' + fmtDur(frame / fps) + ' · ' + (blob.size/1048576).toFixed(1) + ' МБ', 'warn');
+    if(blob.size){
+      downloadBlobFile(blob, exportDownloadName(seq, '_partial'));
+      $('exportDlg').classList.remove('open');
+      toast('Поток остановлен — файл сохранён до стопа: ' + fmtDur(frame / fps) + ' · ' + (blob.size/1048576).toFixed(1) + ' МБ · не полный', 'warn');
+    } else toast('Поток остановлен — файла нет', 'warn');
     return;
   }
   // ---- самопроверка файла: метаданные читаются, длительность совпадает ----
@@ -5471,7 +5543,10 @@ async function exportViaMediaRecorder(p){
   let frame = 0;
   const startedAt = performance.now();
   for(let t = tIn; t < tOut - 1e-6; t += 1 / fps){
-    if(state.renderAbort) break;
+    if(state.renderAbort){
+      for(const s of sources){ try{ s.stop(); }catch(e){} }
+      break;
+    }
     const late = (performance.now() - startedAt) - (t - tIn) * 1000;
     if(late < 250){ // не отстаём от стены — рисуем кадр (иначе пропускаем)
       try{ await drawFrameForOrdinaryExport(ctx, t, seq, cache, W, H); }catch(e){}
@@ -5490,20 +5565,21 @@ async function exportViaMediaRecorder(p){
   $('stRender').textContent = '';
   $('exportDlg').classList.remove('rendering');
   $('renderBox').style.display = 'none';
-  try{ rec.stop(); }catch(e){}
+  try{ if(rec.state === 'recording') rec.requestData(); }catch(e){}
+  try{ if(rec.state !== 'inactive') rec.stop(); }catch(e){}
   await recDone;
-  if(frame === 0){
-    toast('Экспорт остановлен', 'warn');
-    return;
-  }
   if(aborted){
     const blob = new Blob(chunks, {type: (cm.mime || 'video/webm').split(';')[0]});
     if(blob.size){
       const ext = (cm.ext ? '.' + cm.ext : '.webm');
       downloadBlobFile(blob, exportDownloadName(seq, '_partial').replace(/\.mp4$/i, ext));
       $('exportDlg').classList.remove('open');
-      toast('Экспорт остановлен — сохранён фрагмент до стопа · ' + (blob.size/1048576).toFixed(1) + ' МБ', 'warn');
-    } else toast('Экспорт остановлен', 'warn');
+      toast('Поток остановлен — файл сохранён до стопа · ' + (blob.size/1048576).toFixed(1) + ' МБ · не полный', 'warn');
+    } else toast('Поток остановлен — браузер не отдал ни байта (попробуйте стоп чуть позже)', 'warn');
+    return;
+  }
+  if(frame === 0){
+    toast('Экспорт остановлен', 'warn');
     return;
   }
   const blob = new Blob(chunks, {type: cm.mime.split(';')[0]});
@@ -13221,7 +13297,7 @@ function applyLang(){
   for(const pair of TR_TEXT){ const el = $(pair[0]); if(el) el.textContent = t(pair[1]); }
   for(const pair of TR_TITLE){ const el = $(pair[0]); if(el) el.title = t(pair[1]); }
   const ep = $('emptyP'); if(ep) ep.innerHTML = t('empty_p');
-  const av = $('appVer'); if(av) av.innerHTML = t('app_ver') + ' <b>v4.93</b>';
+  const av = $('appVer'); if(av) av.innerHTML = t('app_ver') + ' <b>v5.01</b>';
   for(const id of ['lblVideo','lblAudio']) { const el = $(id); if(el) el.textContent = t(id === 'lblVideo' ? 'lbl_video' : 'lbl_audio'); }
   for(const pr of [['expTitleTxt','exp_title'],['lblRes','lbl_res'],['lblBr','lbl_br'],['lblRange','lbl_range'],['lblCodec','lbl_codec'],
                    ['lblStop','lbl_stop'],['lblStartExp','lbl_start_exp'],['lblCancel','lbl_cancel'],
@@ -13233,7 +13309,7 @@ function applyLang(){
     const el = $(pr[0]); if(el) el.innerHTML = t(pr[1]); // ссылки сохраняются в переводах
   }
   const nsPh = $('nsName'); if(nsPh) nsPh.placeholder = t('ns_ph');
-  const bs = $('brandSub'); if(bs) bs.textContent = 'v4.93 — ' + t('brand_sub');
+  const bs = $('brandSub'); if(bs) bs.textContent = 'v5.01 — ' + t('brand_sub');
   const lw = $('lbWheelHint'); if(lw) lw.textContent = t('wheel_hint');
   const rh = $('restHint'); if(rh) rh.textContent = t('rest_phrase');
   updateStatus();
@@ -13595,23 +13671,30 @@ function renderHelpContent(){
 }
 function updateHelpPageLabel(){
   const el = $('hmPage');
-  if(el) el.textContent = state.helpPage + t('help_of') + '3';
+  if(el) el.textContent = state.helpPage + t('help_of') + '4';
 }
 function openHelp(){
   $('helpDlg').style.display = 'flex';
   helpGo(state.helpPage || 1);
+  try{
+    if(location.protocol === 'file:'){
+      const fr = $('helpYtFrame'), th = $('helpYtThumb');
+      if(fr) fr.style.display = 'none';
+      if(th) th.style.display = 'flex';
+    }
+  }catch(e){}
 }
 function closeHelp(){ $('helpDlg').style.display = 'none'; }
 function helpGo(n){
   state.helpPage = n;
-  const map = {1: $('hp1'), 2: $('hp2'), 3: $('hp3')};
+  const map = {1: $('hp0'), 2: $('hp1'), 3: $('hp2'), 4: $('hp3')};
   for(const k in map) if(map[k]) map[k].style.display = (Number(k) === n) ? 'block' : 'none';
   updateHelpPageLabel();
 }
 $('btnHelp').addEventListener('click', () => { if($('helpDlg').style.display === 'none') openHelp(); else closeHelp(); });
 $('btnHelpClose').addEventListener('click', closeHelp);
 $('btnHelpBack').addEventListener('click', () => helpGo(state.helpPage <= 1 ? 1 : state.helpPage - 1));
-$('btnHelpNext').addEventListener('click', () => helpGo(state.helpPage >= 3 ? 1 : state.helpPage + 1));
+$('btnHelpNext').addEventListener('click', () => helpGo(state.helpPage >= 4 ? 1 : state.helpPage + 1));
 
 /* ============================================================
    ИНТЕРАКТИВНЫЙ ТУР: светящийся зелёный шарик облетает программу.
@@ -14200,5 +14283,5 @@ try{
 
 updatePlayhead();
 </script>
-<script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a31cfb26cbad512f',t:'MTc4Nzg1MzY4MQ=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+<script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a34be9ff1d8ed924',t:'MTc4ODM0NTgwOQ=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
